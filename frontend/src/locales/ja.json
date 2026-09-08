@@ -238,6 +238,7 @@
     "keywordPlaceholder": "空の場合はスキップ",
     "keywordRequired": "ページに必ず含まれるキーワード",
     "method": "リクエストメソッド",
+    "methodPingHint": "PING:HEAD リクエストを送信し、サーバーから応答があれば（4xx/5xx含む）オンラインと判定します。デグレード判定は引き続き有効です。",
     "tags": "タグ",
     "tagsPlaceholder": "prod,web,api",
     "tagsHint": "任意、カンマ区切り",

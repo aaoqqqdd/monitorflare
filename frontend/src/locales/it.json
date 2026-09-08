@@ -238,6 +238,7 @@
     "keywordPlaceholder": "Lascia vuoto per saltare",
     "keywordRequired": "Parola chiave che la pagina deve contenere",
     "method": "Metodo di richiesta",
+    "methodPingHint": "PING: invia una richiesta HEAD; qualsiasi risposta del server (inclusi 4xx/5xx) è considerata online. Le regole di degrado restano valide.",
     "tags": "Tag",
     "tagsPlaceholder": "prod,web,api",
     "tagsHint": "Facoltativo, separato da virgole",

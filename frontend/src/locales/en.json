@@ -238,6 +238,7 @@
     "keywordPlaceholder": "Leave empty to skip",
     "keywordRequired": "Keyword the page must contain",
     "method": "Request method",
+    "methodPingHint": "PING: sends a HEAD request; any server response (including 4xx/5xx) counts as up. Degraded rules still apply.",
     "tags": "Tags",
     "tagsPlaceholder": "prod,web,api",
     "tagsHint": "Optional, comma-separated",

@@ -17,6 +17,9 @@ function parseDegradedStatusCodes(raw: string | null | undefined): Set<number> {
 // ---------- HTTP 监测 ----------
 async function checkHTTP(monitor: Monitor): Promise<CheckResult> {
   const startTime = Date.now();
+  // PING:连通性检查 —— 发 HEAD 请求,只要服务器有响应(含 4xx/5xx)即视为在线;
+  //       仍走降级判定(降级状态码 / 慢响应)。
+  const isPing = (monitor.method || 'GET').toUpperCase() === 'PING';
   try {
     let headers: Record<string, string> = {
       'User-Agent': monitor.user_agent || 'MonitorFlare/1.0',
@@ -27,7 +30,7 @@ async function checkHTTP(monitor: Monitor): Promise<CheckResult> {
       } catch { /* ignore */ }
     }
     const fetchOptions: RequestInit = {
-      method: monitor.method || 'GET',
+      method: isPing ? 'HEAD' : (monitor.method || 'GET'),
       headers,
       cf: { cacheTtl: 0, cacheEverything: false } as RequestInitCfProperties,
     };
@@ -42,6 +45,17 @@ async function checkHTTP(monitor: Monitor): Promise<CheckResult> {
     const degradedCodes = parseDegradedStatusCodes(monitor.degraded_status_codes);
     const degradedKeyword = monitor.degraded_keyword || '';
     const degradedLatency = Number(monitor.degraded_latency_ms) || 0;
+
+    if (isPing) {
+      // 有响应即在线;命中降级状态码或慢响应则记降级(HEAD 无正文,不判关键字)
+      if (degradedCodes.has(response.status)) {
+        return { ok: true, degraded: true, statusCode: response.status, latency, reason: `HTTP ${response.status} (degraded)` };
+      }
+      if (degradedLatency > 0 && latency >= degradedLatency) {
+        return { ok: true, degraded: true, statusCode: response.status, latency, reason: `Degraded: slow response ${latency}ms ≥ ${degradedLatency}ms` };
+      }
+      return { ok: true, statusCode: response.status, latency, reason: '' };
+    }
 
     if (!response.ok) {
       // 非 2xx:命中降级状态码白名单则视为降级(仍可读),否则故障

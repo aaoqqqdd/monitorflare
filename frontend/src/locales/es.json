@@ -238,6 +238,7 @@
     "keywordPlaceholder": "Déjalo vacío para omitir",
     "keywordRequired": "Palabra clave que debe contener la página",
     "method": "Método de solicitud",
+    "methodPingHint": "PING: envía una solicitud HEAD; cualquier respuesta del servidor (incluidos 4xx/5xx) cuenta como en línea. Las reglas de degradación siguen aplicándose.",
     "tags": "Etiquetas",
     "tagsPlaceholder": "prod,web,api",
     "tagsHint": "Opcional, separado por comas",

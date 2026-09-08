@@ -238,6 +238,7 @@
     "keywordPlaceholder": "留空则不检测",
     "keywordRequired": "页面必须包含的关键词",
     "method": "请求方法",
+    "methodPingHint": "PING:发送 HEAD 请求,服务器有任何响应(含 4xx/5xx)即视为在线;降级判定仍生效。",
     "tags": "标签",
     "tagsPlaceholder": "prod,web,api",
     "tagsHint": "可选，逗号分隔",

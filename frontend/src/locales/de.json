@@ -238,6 +238,7 @@
     "keywordPlaceholder": "Leer lassen zum Überspringen",
     "keywordRequired": "Schlüsselwort, das die Seite enthalten muss",
     "method": "Anfragemethode",
+    "methodPingHint": "PING: sendet eine HEAD-Anfrage; jede Serverantwort (auch 4xx/5xx) gilt als online. Degraded-Regeln gelten weiterhin.",
     "tags": "Tags",
     "tagsPlaceholder": "prod,web,api",
     "tagsHint": "Optional, durch Komma getrennt",

@@ -238,6 +238,7 @@
     "keywordPlaceholder": "留空則不檢測",
     "keywordRequired": "頁面必須包含的關鍵詞",
     "method": "請求方法",
+    "methodPingHint": "PING:傳送 HEAD 請求,伺服器有任何回應(含 4xx/5xx)即視為在線;降級判定仍生效。",
     "tags": "標籤",
     "tagsPlaceholder": "prod,web,api",
     "tagsHint": "可選，逗號分隔",

@@ -238,6 +238,7 @@
     "keywordPlaceholder": "Laisser vide pour ignorer",
     "keywordRequired": "Mot-clé que la page doit contenir",
     "method": "Méthode de requête",
+    "methodPingHint": "PING : envoie une requête HEAD ; toute réponse du serveur (y compris 4xx/5xx) est considérée comme en ligne. Les règles de dégradation restent appliquées.",
     "tags": "Étiquettes",
     "tagsPlaceholder": "prod,web,api",
     "tagsHint": "Facultatif, séparé par des virgules",

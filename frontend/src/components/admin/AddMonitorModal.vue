@@ -81,8 +81,9 @@
               <div>
                 <label class="block text-sm font-medium text-slate-300 mb-2">{{ $t('monitorForm.method') }}</label>
                 <select v-model="newMonitor.method" class="input-field w-full border border-slate-700 rounded-xl px-4 py-3 text-sm bg-slate-800/80 text-white outline-none">
-                  <option value="GET">GET</option><option value="POST">POST</option><option value="HEAD">HEAD</option><option value="PUT">PUT</option>
+                  <option value="GET">GET</option><option value="POST">POST</option><option value="HEAD">HEAD</option><option value="PUT">PUT</option><option value="PING">PING</option>
                 </select>
+                <p v-if="newMonitor.method === 'PING'" class="text-xs text-slate-500 mt-1.5">{{ $t('monitorForm.methodPingHint') }}</p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-slate-300 mb-2">{{ $t('monitorForm.keyword') }} <span class="text-xs font-normal text-slate-500">{{ $t('common.optional') }}</span></label>
