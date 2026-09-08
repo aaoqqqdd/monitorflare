@@ -654,6 +654,7 @@
     "latencyTrend": "지연 추이",
     "now": "현재",
     "noData": "데이터가 없습니다",
+    "noSuccessData": "이 기간에 성공한 점검이 없습니다 (지연 시간은 성공한 요청만 집계)",
     "recentChecks": "최근 확인",
     "recentChecksCount": "{count}개",
     "colTime": "시간",

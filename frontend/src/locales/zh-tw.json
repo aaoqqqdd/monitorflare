@@ -654,6 +654,7 @@
     "latencyTrend": "延遲趨勢",
     "now": "現在",
     "noData": "暫無資料",
+    "noSuccessData": "此範圍內尚無成功檢查(延遲僅統計成功請求)",
     "recentChecks": "最近檢查",
     "recentChecksCount": "{count} 筆",
     "colTime": "時間",

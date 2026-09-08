@@ -654,6 +654,7 @@
     "latencyTrend": "Latency trend",
     "now": "now",
     "noData": "No data available yet",
+    "noSuccessData": "No successful checks in this range (latency only counts successful requests)",
     "recentChecks": "Recent checks",
     "recentChecksCount": "{count} records",
     "colTime": "Time",

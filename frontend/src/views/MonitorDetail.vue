@@ -146,7 +146,7 @@
               <span class="font-semibold text-sky-500">{{ $t('monitorDetail.now') }}</span>
             </div>
           </div>
-          <p v-else class="text-xs text-slate-400 dark:text-slate-600">{{ $t('monitorDetail.noData') }}</p>
+          <p v-else class="text-xs text-slate-400 dark:text-slate-600">{{ logs.length > 0 ? $t('monitorDetail.noSuccessData') : $t('monitorDetail.noData') }}</p>
         </div>
 
         <!-- 最近检查日志 -->
@@ -321,7 +321,8 @@ const selectRange = (key) => {
 };
 
 const loadSeries = async (r) => {
-    if (seriesCache[r]) {
+    // 空数组也是「已缓存」但无内容,视为未命中以便重新拉取(否则切到空区间后再也不刷新)
+    if (seriesCache[r] && seriesCache[r].length) {
         if (range.value === r) latencySeries.value = seriesCache[r];
         return;
     }
@@ -348,6 +349,11 @@ const seriesPoints = computed(() => {
     pts.forEach((p, i) => {
         p.y = H - P - ((latencySeries.value[i].latency - min) / rangeVal) * (H - 2 * P);
     });
+    // 只有 1 个数据点时,补一个同值终点,画一条水平基线而非空白
+    if (pts.length === 1) {
+        pts[0].x = P;
+        pts.push({ x: W - P, y: pts[0].y, t: pts[0].t, l: pts[0].l });
+    }
     return pts;
 });
 

@@ -654,6 +654,7 @@
     "latencyTrend": "Tendance de latence",
     "now": "maintenant",
     "noData": "Aucune donnée",
+    "noSuccessData": "Aucune vérification réussie sur cette période (la latence ne compte que les requêtes réussies)",
     "recentChecks": "Vérifications récentes",
     "recentChecksCount": "{count} enregistrements",
     "colTime": "Heure",

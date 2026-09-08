@@ -654,6 +654,7 @@
     "latencyTrend": "応答時間の推移",
     "now": "現在",
     "noData": "データがありません",
+    "noSuccessData": "この期間内に成功したチェックがありません(レイテンシは成功リクエストのみ集計)",
     "recentChecks": "最近のチェック",
     "recentChecksCount": "{count} 件",
     "colTime": "時刻",
