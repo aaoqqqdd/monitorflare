@@ -85,6 +85,7 @@ const props = defineProps({
     allUp:          { type: Boolean, required: true },
     hasRetrying:    { type: Boolean, required: true },
     hasDown:        { type: Boolean, required: true },
+    hasDegraded:    { type: Boolean, default: false },
     avgLatency:     { type: Number,  default: null },
     error:          { type: String,  default: null },
 });
@@ -137,6 +138,20 @@ const STATUS = {
         dotColor:       'bg-red-400',
         badgeTextClass: 'text-red-700 dark:text-red-300',
     },
+    degraded: {
+        icon: 'warning',
+        titleKey: 'hero.degradedTitle',
+        subtitleKey: 'hero.degradedSubtitle',
+        badgeKey: 'hero.degradedBadge',
+        wrapClass:      'border-amber-200 dark:border-amber-500/15',
+        gradientClass:  'bg-gradient-to-br from-amber-50 via-white to-white dark:from-amber-950/24 dark:via-slate-950/20 dark:to-transparent',
+        iconWrapClass:  'bg-amber-100 dark:bg-amber-500/15 border-amber-200 dark:border-amber-500/20',
+        iconColor:      'text-amber-600 dark:text-amber-400',
+        subtitleColor:  'text-amber-700/80 dark:text-amber-300/80',
+        badgeWrapClass: 'bg-amber-100 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20',
+        dotColor:       'bg-amber-400',
+        badgeTextClass: 'text-amber-700 dark:text-amber-300',
+    },
 };
 
 const { t } = useI18n();
@@ -144,6 +159,7 @@ const { t } = useI18n();
 const cfg = computed(() => {
     let base;
     if (props.hasDown)     base = STATUS.down;
+    else if (props.hasDegraded) base = STATUS.degraded;
     else if (props.hasRetrying) base = STATUS.retrying;
     else base = STATUS.up;
     return {

@@ -45,6 +45,7 @@
                       'bg-emerald-400': monitor.status === 'UP' && !monitor.paused,
                       'bg-red-400': monitor.status === 'DOWN',
                       'bg-yellow-400': monitor.status === 'RETRYING',
+                      'bg-amber-400': monitor.status === 'DEGRADED',
                       'bg-slate-400 dark:bg-slate-600': monitor.paused,
                     }"></div>
                   <div v-if="monitor.status === 'UP' && !monitor.paused" class="absolute inset-0 rounded-full bg-emerald-400/40 pulse-dot"></div>
@@ -60,8 +61,8 @@
               </div>
 
               <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-                <a :href="monitor.url" target="_blank" rel="noopener" class="text-[12px] sm:text-[13px] font-mono text-slate-500 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors truncate max-w-full sm:max-w-[420px] flex items-center gap-1.5">
-                  {{ monitor.url }}
+                <a :href="monitor.display_url || monitor.url" target="_blank" rel="noopener" class="text-[12px] sm:text-[13px] font-mono text-slate-500 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors truncate max-w-full sm:max-w-[420px] flex items-center gap-1.5">
+                  {{ monitor.display_url || monitor.url }}
                   <svg class="w-2.5 h-2.5 opacity-70 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
                 </a>
                 <a v-if="monitor.cert_expiry && sslCheckUrl" :href="sslCheckUrl" target="_blank" rel="noopener"
@@ -286,6 +287,7 @@ const statusLabel = computed(() => {
     if (monitor.value?.paused) return t('status.paused');
     if (monitor.value?.status === 'UP') return t('status.up');
     if (monitor.value?.status === 'DOWN') return t('status.down');
+    if (monitor.value?.status === 'DEGRADED') return t('status.degraded');
     return t('status.retrying');
 });
 

@@ -41,7 +41,7 @@
           class="w-4 h-4 rounded accent-green-500 shrink-0 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
           :class="selectedIds.includes(m.id) ? 'opacity-100' : ''">
         <div class="relative shrink-0">
-          <div class="w-2.5 h-2.5 rounded-full" :class="{ 'bg-green-400': m.status === 'UP', 'bg-red-400': m.status === 'DOWN', 'bg-yellow-400': m.status === 'RETRYING', 'bg-slate-500': m.status === 'PAUSED' }"></div>
+          <div class="w-2.5 h-2.5 rounded-full" :class="{ 'bg-green-400': m.status === 'UP', 'bg-red-400': m.status === 'DOWN', 'bg-yellow-400': m.status === 'RETRYING', 'bg-amber-400': m.status === 'DEGRADED', 'bg-slate-500': m.status === 'PAUSED' }"></div>
           <div v-if="m.status === 'UP'" class="absolute inset-0 w-2.5 h-2.5 rounded-full bg-green-400/40 animate-ping"></div>
         </div>
         <div class="min-w-0 flex-1">
@@ -52,6 +52,7 @@
             </router-link>
             <span class="text-[10px] font-mono text-slate-600 shrink-0">{{ m.method || 'GET' }}</span>
             <span v-if="m.status === 'DOWN'" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400 animate-pulse">{{ $t('status.down') }}</span>
+            <span v-if="m.status === 'DEGRADED'" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400">{{ $t('status.degraded') }}</span>
             <span v-if="m.status === 'RETRYING'" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-yellow-500/20 text-yellow-400">{{ $t('status.retrying') }}</span>
             <span v-if="m.paused" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-700 text-slate-400">{{ $t('status.paused') }}</span>
           </div>

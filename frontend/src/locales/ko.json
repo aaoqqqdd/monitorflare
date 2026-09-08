@@ -65,7 +65,8 @@
     "up": "정상",
     "down": "중단",
     "retrying": "재시도 중",
-    "paused": "일시 중지"
+    "paused": "일시 중지",
+    "degraded": "성능 저하"
   },
   "hero": {
     "allUpTitle": "모든 시스템 정상",
@@ -80,7 +81,10 @@
     "monitors": "모니터",
     "currentUp": "현재 정상",
     "avgLatency": "평균 지연 시간",
-    "retry": "재시도"
+    "retry": "재시도",
+    "degradedTitle": "일부 서비스 성능 저하",
+    "degradedSubtitle": "접근은 가능하지만 완전히 정상은 아닙니다. 아래 대상을 확인하세요",
+    "degradedBadge": "성능 저하"
   },
   "monitorCard": {
     "latencyTrend": "지연 시간 추이",
@@ -245,7 +249,15 @@
     "alertAfterFailures": "연속 실패 후 알림",
     "errorRateZero": "0 = 꺼짐",
     "create": "모니터 만들기",
-    "creating": "만드는 중..."
+    "creating": "만드는 중...",
+    "displayUrl": "표시 링크",
+    "displayUrlPlaceholder": "모니터링 URL 대신 상태 페이지에 표시",
+    "degradedTitle": "성능 저하 판정",
+    "degradedHint": "2xx를 반환하지만 완전히 정상은 아닌 상태. 아래 조건 중 하나라도 해당하면 UP/DOWN 대신 성능 저하로 표시합니다.",
+    "degradedKeyword": "성능 저하 키워드",
+    "degradedLatency": "성능 저하 지연 (ms)",
+    "degradedStatusCodes": "성능 저하 상태 코드",
+    "degradedSilence": "성능 저하 알림 침묵 (시간)"
   },
   "channels": {
     "title": "알림 채널",

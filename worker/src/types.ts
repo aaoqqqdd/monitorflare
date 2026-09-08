@@ -8,13 +8,14 @@ export interface Monitor {
   id: number;
   name: string;
   url: string;
+  display_url: string | null;
   type: MonitorType;
   config: string | null;
   method: string;
   request_headers: string | null;
   request_body: string | null;
   interval: number;
-  status: 'UP' | 'DOWN' | 'RETRYING' | 'PAUSED';
+  status: 'UP' | 'DOWN' | 'RETRYING' | 'PAUSED' | 'DEGRADED';
   retry_count: number;
   last_check: string | null;
   keyword: string | null;
@@ -34,6 +35,12 @@ export interface Monitor {
   last_alert_uptime: string | null;
   last_alert_ssl: string | null;
   last_alert_domain: string | null;
+  // 降级(DEGRADED)判定:可读到 2xx 但服务未完全健康。任一条件命中即降级。
+  degraded_keyword: string | null;      // 响应体包含此关键字 → 降级
+  degraded_latency_ms: number;          // 响应耗时 ≥ 此毫秒数 → 降级(0=关闭)
+  degraded_status_codes: string | null; // 这些 HTTP 状态码(逗号分隔,如 "429,503")视为降级而非故障
+  alert_silence_degraded: number;       // 降级告警静默小时数
+  last_alert_degraded: string | null;
   sort_order: number;
   created_at: string;
 }
@@ -44,6 +51,7 @@ export interface Log {
   status_code: number;
   latency: number;
   is_fail: number;
+  degraded: number;
   reason: string | null;
   created_at: string;
 }
@@ -114,8 +122,9 @@ export type Bindings = {
 // 检查结果
 export interface CheckResult {
   ok: boolean;
+  degraded?: boolean;   // ok=true 但服务处于降级状态(仅 HTTP 监测会置位)
   statusCode: number;   // HTTP 状态码;DNS/Port 用 0/1 语义
   latency: number;      // 毫秒
-  reason: string;       // 失败原因(空串表示成功)
+  reason: string;       // 失败/降级原因(空串表示完全正常)
   detail?: string;      // 附加信息(如 DNS 记录值)
 }

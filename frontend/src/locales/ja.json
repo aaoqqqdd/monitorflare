@@ -65,7 +65,8 @@
     "up": "正常",
     "down": "停止",
     "retrying": "再試行中",
-    "paused": "一時停止"
+    "paused": "一時停止",
+    "degraded": "機能低下"
   },
   "hero": {
     "allUpTitle": "全システム正常稼働中",
@@ -80,7 +81,10 @@
     "monitors": "監視項目",
     "currentUp": "現在稼働中",
     "avgLatency": "平均レイテンシ",
-    "retry": "再試行"
+    "retry": "再試行",
+    "degradedTitle": "一部のサービスが機能低下",
+    "degradedSubtitle": "到達可能ですが完全に正常ではありません。以下の対象を確認してください",
+    "degradedBadge": "機能低下"
   },
   "monitorCard": {
     "latencyTrend": "レイテンシ推移",
@@ -245,7 +249,15 @@
     "alertAfterFailures": "連続失敗後にアラート",
     "errorRateZero": "0 = オフ",
     "create": "監視を作成",
-    "creating": "作成中..."
+    "creating": "作成中...",
+    "displayUrl": "表示リンク",
+    "displayUrlPlaceholder": "監視 URL の代わりにステータスページに表示",
+    "degradedTitle": "機能低下の判定",
+    "degradedHint": "2xx を返すが完全に正常ではない状態。以下のいずれかに該当すると UP/DOWN ではなく機能低下として扱います。",
+    "degradedKeyword": "機能低下キーワード",
+    "degradedLatency": "機能低下レイテンシ (ms)",
+    "degradedStatusCodes": "機能低下ステータスコード",
+    "degradedSilence": "機能低下アラート抑制 (時間)"
   },
   "channels": {
     "title": "通知チャンネル",

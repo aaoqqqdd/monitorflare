@@ -9,7 +9,7 @@
       <template v-else>
       <!-- 英雄状态区 -->
       <HeroBanner v-if="monitors.length > 0" :monitors="monitors" :activeMonitors="activeMonitors"
-        :allUp="allUp" :hasRetrying="hasRetrying" :hasDown="hasDown" :avgLatency="avgLatency" :error="error"
+        :allUp="allUp" :hasRetrying="hasRetrying" :hasDown="hasDown" :hasDegraded="hasDegraded" :avgLatency="avgLatency" :error="error"
         @retry="fetchMonitors" />
 
       <!-- 加载占位 -->
@@ -148,6 +148,7 @@ const activeMonitors = computed(() => monitors.value.filter(m => m.paused !== 1 
 const allUp = computed(() => activeMonitors.value.length > 0 && activeMonitors.value.every(m => m.status === 'UP'));
 const hasRetrying = computed(() => activeMonitors.value.some(m => m.status === 'RETRYING'));
 const hasDown = computed(() => activeMonitors.value.some(m => m.status === 'DOWN'));
+const hasDegraded = computed(() => activeMonitors.value.some(m => m.status === 'DEGRADED'));
 const avgLatency = computed(() => {
     const active = activeMonitors.value.filter(m => m.latency != null);
     if (active.length === 0) return null;

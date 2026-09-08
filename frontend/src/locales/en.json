@@ -65,7 +65,8 @@
     "up": "Operational",
     "down": "Down",
     "retrying": "Retrying",
-    "paused": "Paused"
+    "paused": "Paused",
+    "degraded": "Degraded"
   },
   "hero": {
     "allUpTitle": "All systems operational",
@@ -80,7 +81,10 @@
     "monitors": "Monitors",
     "currentUp": "Currently up",
     "avgLatency": "Avg latency",
-    "retry": "Retry"
+    "retry": "Retry",
+    "degradedTitle": "Some services are degraded",
+    "degradedSubtitle": "Reachable but not fully healthy — see the affected services below",
+    "degradedBadge": "Degraded"
   },
   "monitorCard": {
     "latencyTrend": "Latency trend",
@@ -245,7 +249,15 @@
     "alertAfterFailures": "Alert after consecutive failures",
     "errorRateZero": "0 = off",
     "create": "Create monitor",
-    "creating": "Creating..."
+    "creating": "Creating...",
+    "displayUrl": "Display link",
+    "displayUrlPlaceholder": "Shown on the status page instead of the probe URL",
+    "degradedTitle": "Degraded detection",
+    "degradedHint": "Returns 2xx but not fully healthy. Any rule below marks the monitor DEGRADED instead of UP/DOWN.",
+    "degradedKeyword": "Degraded keyword",
+    "degradedLatency": "Degraded latency (ms)",
+    "degradedStatusCodes": "Degraded status codes",
+    "degradedSilence": "Degraded alert silence (h)"
   },
   "channels": {
     "title": "Notification channels",

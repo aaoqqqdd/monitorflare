@@ -96,6 +96,10 @@
                 <label class="block text-sm font-medium text-slate-300 mb-2">{{ $t('monitorForm.tags') }} <span class="text-xs font-normal text-slate-500">{{ $t('monitorForm.tagsHint') }}</span></label>
                 <input v-model="newMonitor.tags" placeholder="prod,web,api" class="input-field w-full border border-slate-700 rounded-xl px-4 py-3 text-sm bg-slate-800/80 text-white outline-none placeholder-slate-600">
               </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2">{{ $t('monitorForm.displayUrl') }} <span class="text-xs font-normal text-slate-500">{{ $t('common.optional') }}</span></label>
+                <input v-model="newMonitor.display_url" :placeholder="$t('monitorForm.displayUrlPlaceholder')" class="input-field w-full border border-slate-700 rounded-xl px-4 py-3 text-sm bg-slate-800/80 text-white outline-none font-mono placeholder-slate-600">
+              </div>
             </div>
             <div class="mt-4">
               <label class="block text-sm font-medium text-slate-300 mb-2">{{ $t('monitorForm.requestHeaders') }} <span class="text-xs font-normal text-slate-500">{{ $t('monitorForm.headersHint') }}</span></label>
@@ -108,6 +112,29 @@
             <div class="mt-4">
               <label class="block text-sm font-medium text-slate-300 mb-2">{{ $t('configModal.errorRate') }} <span class="text-xs font-normal text-slate-500">{{ $t('monitorForm.errorRateZero') }}</span></label>
               <input type="number" v-model="newMonitor.alert_error_rate" min="0" max="100" placeholder="0" class="input-field w-full border border-slate-700 rounded-xl px-4 py-3 text-sm bg-slate-800/80 text-white outline-none placeholder-slate-600">
+            </div>
+          </div>
+          <!-- 降级判定(仅 HTTP) -->
+          <div v-if="newMonitor.type === 'http'">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center gap-2"><i class="fas fa-triangle-exclamation text-amber-400"></i> {{ $t('monitorForm.degradedTitle') }}</h4>
+            <p class="text-xs text-slate-500 mb-4">{{ $t('monitorForm.degradedHint') }}</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2">{{ $t('monitorForm.degradedKeyword') }} <span class="text-xs font-normal text-slate-500">{{ $t('common.optional') }}</span></label>
+                <input v-model="newMonitor.degraded_keyword" placeholder='"status":"degraded"' class="input-field w-full border border-slate-700 rounded-xl px-4 py-3 text-sm bg-slate-800/80 text-white outline-none font-mono placeholder-slate-600">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2">{{ $t('monitorForm.degradedLatency') }} <span class="text-xs font-normal text-slate-500">{{ $t('monitorForm.errorRateZero') }}</span></label>
+                <input type="number" min="0" v-model="newMonitor.degraded_latency_ms" placeholder="0" class="input-field w-full border border-slate-700 rounded-xl px-4 py-3 text-sm bg-slate-800/80 text-white outline-none font-mono placeholder-slate-600">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2">{{ $t('monitorForm.degradedStatusCodes') }} <span class="text-xs font-normal text-slate-500">{{ $t('common.optional') }}</span></label>
+                <input v-model="newMonitor.degraded_status_codes" placeholder="429,503" class="input-field w-full border border-slate-700 rounded-xl px-4 py-3 text-sm bg-slate-800/80 text-white outline-none font-mono placeholder-slate-600">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2">{{ $t('monitorForm.degradedSilence') }}</label>
+                <input type="number" min="0" v-model="newMonitor.alert_silence_degraded" placeholder="24" class="input-field w-full border border-slate-700 rounded-xl px-4 py-3 text-sm bg-slate-800/80 text-white outline-none font-mono placeholder-slate-600">
+              </div>
             </div>
           </div>
           <!-- 检测功能 -->
