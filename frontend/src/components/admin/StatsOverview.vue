@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-4 fade-up-d1">
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-2.5 mb-4 fade-up-d1">
     <div class="glass rounded-xl px-4 py-3">
       <div class="flex items-center justify-between gap-3">
         <div>
@@ -16,6 +16,15 @@
           <p class="text-xl font-bold text-emerald-500 font-mono">{{ stats.online }}</p>
         </div>
         <i class="fas fa-check text-emerald-400 text-sm"></i>
+      </div>
+    </div>
+    <div class="glass rounded-xl px-4 py-3">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <p class="text-[11px] font-semibold text-amber-500">{{ $t('status.degraded') }}</p>
+          <p class="text-xl font-bold text-amber-500 font-mono">{{ stats.degraded || 0 }}</p>
+        </div>
+        <i class="fas fa-triangle-exclamation text-amber-400 text-sm"></i>
       </div>
     </div>
     <div class="glass rounded-xl px-4 py-3">

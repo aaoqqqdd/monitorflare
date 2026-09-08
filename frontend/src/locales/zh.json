@@ -65,7 +65,8 @@
     "up": "在线",
     "down": "异常",
     "retrying": "重试中",
-    "paused": "暂停"
+    "paused": "暂停",
+    "degraded": "降级"
   },
   "hero": {
     "allUpTitle": "所有系统运行正常",
@@ -80,7 +81,10 @@
     "monitors": "监控项",
     "currentUp": "当前可用",
     "avgLatency": "平均延迟",
-    "retry": "重试"
+    "retry": "重试",
+    "degradedTitle": "部分服务已降级",
+    "degradedSubtitle": "可访问但未完全健康,请查看下方受影响的服务",
+    "degradedBadge": "降级"
   },
   "monitorCard": {
     "latencyTrend": "延迟趋势",
@@ -245,7 +249,15 @@
     "alertAfterFailures": "连续失败告警次数",
     "errorRateZero": "0=关闭",
     "create": "创建监控",
-    "creating": "创建中..."
+    "creating": "创建中...",
+    "displayUrl": "展示链接",
+    "displayUrlPlaceholder": "状态页展示此链接,而非探测 URL",
+    "degradedTitle": "降级判定",
+    "degradedHint": "返回 2xx 但未完全健康。命中下方任一规则即标记为降级,而非正常/故障。",
+    "degradedKeyword": "降级关键字",
+    "degradedLatency": "降级延迟阈值 (ms)",
+    "degradedStatusCodes": "降级状态码",
+    "degradedSilence": "降级告警静默 (小时)"
   },
   "channels": {
     "title": "通知渠道管理",
@@ -642,6 +654,7 @@
     "latencyTrend": "延迟趋势",
     "now": "现在",
     "noData": "暂无数据",
+    "noSuccessData": "该范围内暂无成功检查(延迟仅统计成功请求)",
     "recentChecks": "最近检查",
     "recentChecksCount": "{count} 条",
     "colTime": "时间",

@@ -1,76 +1,43 @@
 <template>
-  <div class="mb-6 fade-up">
-    <!-- 状态横幅 -->
-    <div v-if="!error"
-      class="hero-banner relative overflow-hidden rounded-2xl p-5 md:p-6 border"
-      :class="cfg.wrapClass">
-
-      <!-- 背景渐变 -->
-      <div class="absolute inset-0" :class="cfg.gradientClass"></div>
-
-      <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-        <!-- 左侧：图标 + 文字 -->
-        <div class="flex items-start gap-4">
-          <div class="hero-icon w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border" :class="cfg.iconWrapClass">
-            <!-- shield：所有正常 -->
-            <svg v-if="cfg.icon === 'shield'" class="w-6 h-6" :class="cfg.iconColor" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
-            </svg>
-            <!-- warning：探测中 -->
-            <svg v-else-if="cfg.icon === 'warning'" class="w-6 h-6" :class="cfg.iconColor" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
-            </svg>
-            <!-- circle-error：故障 -->
-            <svg v-else class="w-6 h-6" :class="cfg.iconColor" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
-            </svg>
+  <div class="mf-hero fade-up">
+    <template v-if="!error">
+      <div class="mf-hero-band">
+        <div class="mf-hero-lead">
+          <div class="mf-hero-code font-mono">
+            <span>{{ $t('statusHeader.statusPage') }}</span>
+            <span class="mf-hero-code-sep">/</span>
+            <span>{{ $t('statusPage.lastChecked', { time: nowLabel }) }}</span>
           </div>
-          <div>
-            <h1 class="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-1">{{ cfg.title }}</h1>
-            <p class="text-sm" :class="cfg.subtitleColor">{{ cfg.subtitle }}</p>
-          </div>
+          <h1 class="mf-hero-title">{{ cfg.title }}</h1>
+          <p class="mf-hero-sub">{{ cfg.subtitle }}</p>
         </div>
 
-        <!-- 右侧：状态徽章 -->
-        <div class="flex items-center gap-3">
-          <div class="flex items-center gap-2 px-4 py-2 rounded-full border" :class="cfg.badgeWrapClass">
-            <span class="relative flex h-2 w-2">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :class="cfg.dotColor"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2" :class="cfg.dotColor"></span>
-            </span>
-            <span class="text-xs font-bold" :class="cfg.badgeTextClass">{{ cfg.badge }}</span>
-          </div>
+        <div class="mf-hero-badge font-mono" :class="cfg.tone">
+          <span class="mf-hero-badge-dot"></span>
+          <span>{{ cfg.badge }}</span>
         </div>
       </div>
 
-      <!-- 底部统计（仅全部正常时显示） -->
-      <div v-if="allUp && !hasRetrying" class="relative mt-5 pt-4 border-t border-emerald-200/70 dark:border-emerald-500/10 grid grid-cols-3 gap-4">
-        <div>
-          <p class="text-[11px] text-slate-500 dark:text-slate-500 mb-1">{{ $t('hero.monitors') }}</p>
-          <p class="text-2xl font-bold text-slate-900 dark:text-white font-mono">{{ activeMonitors.length }}</p>
+      <div class="mf-hero-stats">
+        <div class="mf-stat" data-bar="primary">
+          <span class="mf-stat-label">{{ $t('hero.monitors') }}</span>
+          <span class="mf-stat-value font-mono">{{ activeMonitors.length }}</span>
         </div>
-        <div>
-          <p class="text-[11px] text-slate-500 dark:text-slate-500 mb-1">{{ $t('hero.currentUp') }}</p>
-          <p class="text-2xl font-bold text-emerald-500 dark:text-emerald-400 font-mono">
-            {{ activeMonitors.length > 0 ? Math.round(activeMonitors.filter(m => m.status === 'UP').length / activeMonitors.length * 100) : 0 }}%
-          </p>
+        <div class="mf-stat" :data-bar="upPct >= 100 ? 'success' : upPct >= 90 ? 'warning' : 'danger'">
+          <span class="mf-stat-label">{{ $t('hero.currentUp') }}</span>
+          <span class="mf-stat-value font-mono" :class="upPctTone">{{ upPct }}<span class="mf-stat-unit">%</span></span>
         </div>
-        <div>
-          <p class="text-[11px] text-slate-500 dark:text-slate-500 mb-1">{{ $t('hero.avgLatency') }}</p>
-          <p class="text-2xl font-bold text-slate-900 dark:text-white font-mono">{{ avgLatency != null ? avgLatency + 'ms' : '-' }}</p>
+        <div class="mf-stat" data-bar="primary">
+          <span class="mf-stat-label">{{ $t('hero.avgLatency') }}</span>
+          <span class="mf-stat-value font-mono">{{ avgLatency != null ? avgLatency : '—' }}<span v-if="avgLatency != null" class="mf-stat-unit">ms</span></span>
         </div>
       </div>
-    </div>
+    </template>
 
-    <!-- API 错误提示 -->
-    <div v-if="error" class="glass rounded-2xl p-5 flex items-center gap-4 border border-orange-300 dark:border-orange-500/40 bg-orange-50/80 dark:bg-orange-500/10">
-      <div class="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-500/15 flex items-center justify-center shrink-0">
-        <svg class="w-5 h-5 text-orange-500 dark:text-orange-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
-        </svg>
-      </div>
-      <p class="text-sm text-orange-600 dark:text-orange-300 flex-1">{{ error }}</p>
-      <button @click="$emit('retry')" class="text-xs px-4 py-2 rounded-lg bg-orange-100 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300 hover:bg-orange-200 dark:hover:bg-orange-500/25 transition-all cursor-pointer font-bold">{{ $t('hero.retry') }}</button>
+    <div v-else class="mf-hero-error">
+      <i class="fas fa-triangle-exclamation"></i>
+      <p>{{ error }}</p>
+      <button @click="$emit('retry')" class="mf-hero-retry font-mono">{{ $t('hero.retry') }}</button>
     </div>
   </div>
 </template>
@@ -85,72 +52,164 @@ const props = defineProps({
     allUp:          { type: Boolean, required: true },
     hasRetrying:    { type: Boolean, required: true },
     hasDown:        { type: Boolean, required: true },
+    hasDegraded:    { type: Boolean, default: false },
     avgLatency:     { type: Number,  default: null },
     error:          { type: String,  default: null },
 });
 
 defineEmits(['retry']);
 
-/**
- * 状态样式配置(文案从 i18n 取,见 cfg computed)
- */
-const STATUS = {
-    up: {
-        icon: 'shield',
-        titleKey: 'hero.allUpTitle',
-        subtitleKey: 'hero.allUpSubtitle',
-        badgeKey: 'hero.allUpBadge',
-        wrapClass:      'border-emerald-200 dark:border-emerald-500/15',
-        gradientClass:  'bg-gradient-to-br from-emerald-50 via-white to-white dark:from-emerald-950/25 dark:via-slate-950/20 dark:to-transparent',
-        iconWrapClass:  'bg-emerald-100 dark:bg-emerald-500/15 border-emerald-200 dark:border-emerald-500/20',
-        iconColor:      'text-emerald-600 dark:text-emerald-400',
-        subtitleColor:  'text-emerald-700/80 dark:text-emerald-300/80',
-        badgeWrapClass: 'bg-emerald-100 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20',
-        dotColor:       'bg-emerald-400',
-        badgeTextClass: 'text-emerald-700 dark:text-emerald-300',
-    },
-    retrying: {
-        icon: 'warning',
-        titleKey: 'hero.checkingTitle',
-        subtitleKey: 'hero.checkingSubtitle',
-        badgeKey: 'hero.checkingBadge',
-        wrapClass:      'border-yellow-200 dark:border-yellow-400/15',
-        gradientClass:  'bg-gradient-to-br from-yellow-50 via-white to-white dark:from-yellow-950/24 dark:via-slate-950/20 dark:to-transparent',
-        iconWrapClass:  'bg-yellow-100 dark:bg-yellow-400/15 border-yellow-200 dark:border-yellow-400/20',
-        iconColor:      'text-yellow-600 dark:text-yellow-400',
-        subtitleColor:  'text-yellow-700/80 dark:text-yellow-300/80',
-        badgeWrapClass: 'bg-yellow-100 dark:bg-yellow-400/10 border-yellow-200 dark:border-yellow-400/20',
-        dotColor:       'bg-yellow-400',
-        badgeTextClass: 'text-yellow-700 dark:text-yellow-300',
-    },
-    down: {
-        icon: 'error',
-        titleKey: 'hero.downTitle',
-        subtitleKey: 'hero.downSubtitle',
-        badgeKey: 'hero.downBadge',
-        wrapClass:      'border-red-200 dark:border-red-500/15 glow-red',
-        gradientClass:  'bg-gradient-to-br from-red-50 via-white to-white dark:from-red-950/30 dark:via-slate-950/20 dark:to-transparent',
-        iconWrapClass:  'bg-red-100 dark:bg-red-500/15 border-red-200 dark:border-red-500/20',
-        iconColor:      'text-red-600 dark:text-red-400',
-        subtitleColor:  'text-red-700/80 dark:text-red-300/80',
-        badgeWrapClass: 'bg-red-100 dark:bg-red-500/10 border-red-200 dark:border-red-500/20',
-        dotColor:       'bg-red-400',
-        badgeTextClass: 'text-red-700 dark:text-red-300',
-    },
-};
-
 const { t } = useI18n();
+
+const STATUS = {
+    up:       { tone: 'tone-up',   titleKey: 'hero.allUpTitle',    subtitleKey: 'hero.allUpSubtitle',    badgeKey: 'hero.allUpBadge' },
+    retrying: { tone: 'tone-warn', titleKey: 'hero.checkingTitle', subtitleKey: 'hero.checkingSubtitle', badgeKey: 'hero.checkingBadge' },
+    degraded: { tone: 'tone-warn', titleKey: 'hero.degradedTitle', subtitleKey: 'hero.degradedSubtitle', badgeKey: 'hero.degradedBadge' },
+    down:     { tone: 'tone-down', titleKey: 'hero.downTitle',     subtitleKey: 'hero.downSubtitle',     badgeKey: 'hero.downBadge' },
+};
 
 const cfg = computed(() => {
     let base;
-    if (props.hasDown)     base = STATUS.down;
+    if (props.hasDown) base = STATUS.down;
+    else if (props.hasDegraded) base = STATUS.degraded;
     else if (props.hasRetrying) base = STATUS.retrying;
     else base = STATUS.up;
-    return {
-        ...base,
-        title: t(base.titleKey),
-        subtitle: t(base.subtitleKey),
-        badge: t(base.badgeKey),
-    };
+    return { tone: base.tone, title: t(base.titleKey), subtitle: t(base.subtitleKey), badge: t(base.badgeKey) };
 });
+
+const upPct = computed(() => {
+    const n = props.activeMonitors.length;
+    if (!n) return 0;
+    return Math.round(props.activeMonitors.filter(m => m.status === 'UP').length / n * 100);
+});
+const upPctTone = computed(() => (upPct.value >= 100 ? 'tone-up' : upPct.value >= 90 ? 'tone-warn' : 'tone-down'));
+
+const nowLabel = computed(() => new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false }));
 </script>
+
+<style scoped>
+.mf-hero { margin-bottom: 36px; }
+
+/* ── graphite console band (rent .page-header) ── */
+.mf-hero-band {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 26px 28px;
+    background: var(--mf-graphite);
+    border-bottom: 4px solid var(--mf-accent);
+    border-radius: var(--mf-radius-md) var(--mf-radius-md) 0 0;
+}
+.mf-hero-lead { min-width: 0; }
+.mf-hero-code {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--mf-accent);
+}
+.mf-hero-code-sep { color: #5b6b7a; }
+.mf-hero-code span:last-child { color: #8da0b1; }
+.mf-hero-title {
+    margin: 12px 0 0;
+    font-family: var(--mf-display);
+    font-weight: 600;
+    font-size: clamp(1.55rem, 3vw, 2.1rem);
+    line-height: 1.08;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+    color: #fff;
+}
+.mf-hero-sub { margin: 8px 0 0; font-size: 14px; line-height: 1.55; color: #b9c4ce; max-width: 520px; }
+
+.mf-hero-badge {
+    display: flex; align-items: center; gap: 9px;
+    flex: none;
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1px solid currentColor;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    white-space: nowrap;
+}
+.mf-hero-badge-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 22%, transparent);
+}
+
+/* ── stat cards (rent .stat-card) ── */
+.mf-hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    padding: 12px;
+    background: var(--mf-surface-2);
+    border: 1px solid var(--mf-line);
+    border-top: 0;
+    border-radius: 0 0 var(--mf-radius-md) var(--mf-radius-md);
+}
+.mf-stat {
+    position: relative;
+    overflow: hidden;
+    padding: 18px 18px 16px;
+    background: var(--mf-surface);
+    border: 1px solid var(--mf-line);
+    border-radius: var(--mf-radius);
+    box-shadow: var(--mf-shadow-sm);
+}
+.mf-stat::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: var(--mf-primary);
+}
+.mf-stat[data-bar="success"]::before { background: var(--mf-up); }
+.mf-stat[data-bar="warning"]::before { background: var(--mf-warn); }
+.mf-stat[data-bar="danger"]::before  { background: var(--mf-down); }
+.mf-stat-label {
+    display: block;
+    font-family: var(--mf-display);
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--mf-ink-muted);
+}
+.mf-stat-value {
+    display: block;
+    margin-top: 8px;
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--mf-ink);
+}
+.mf-stat-unit { font-size: 15px; color: var(--mf-ink-muted); margin-left: 2px; }
+
+.tone-up { color: var(--mf-up); }
+.tone-warn { color: var(--mf-warn); }
+.tone-down { color: var(--mf-down); }
+
+.mf-hero-error {
+    display: flex; align-items: center; gap: 16px;
+    padding: 16px 18px;
+    border: 1px solid var(--mf-line);
+    border-left: 4px solid var(--mf-warn);
+    border-radius: var(--mf-radius);
+    background: var(--mf-warn-bg);
+}
+.mf-hero-error i { color: var(--mf-warn); font-size: 16px; }
+.mf-hero-error p { flex: 1; font-size: 14px; color: var(--mf-ink-2); }
+.mf-hero-retry {
+    flex: none;
+    padding: 8px 14px;
+    border-radius: var(--mf-radius);
+    border: 1px solid color-mix(in srgb, var(--mf-warn) 45%, transparent);
+    background: transparent;
+    color: var(--mf-warn);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer;
+}
+
+@media (max-width: 720px) {
+    .mf-hero-band { flex-direction: column; gap: 16px; padding: 20px; }
+    .mf-hero-stats { grid-template-columns: 1fr; }
+    .mf-stat-value { font-size: 22px; }
+}
+</style>

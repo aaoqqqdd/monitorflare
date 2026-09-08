@@ -22,11 +22,13 @@ import {
 } from './utils';
 
 const MONITOR_COLUMNS = `
-  id, name, url, type, config, method, request_headers, request_body, interval, status,
+  id, name, url, display_url, type, config, method, request_headers, request_body, interval, status,
   retry_count, last_check, keyword, user_agent, tags, domain_expiry, cert_expiry,
   check_info_status, paused, check_ssl, check_domain, alert_silence_uptime,
   alert_silence_ssl, alert_silence_domain, alert_error_rate, alert_after_failures,
-  last_alert_uptime, last_alert_ssl, last_alert_domain, sort_order, created_at
+  last_alert_uptime, last_alert_ssl, last_alert_domain,
+  degraded_keyword, degraded_latency_ms, degraded_status_codes,
+  alert_silence_degraded, last_alert_degraded, sort_order, created_at
 `;
 
 // ============================================================
@@ -260,7 +262,7 @@ app.get('/monitors', async (c) => {
 app.get('/monitors/public', async (c) => {
   try {
     const { results } = await c.env.DB.prepare(
-      'SELECT id, name, url, type, status, last_check, cert_expiry, domain_expiry, paused, tags, check_ssl FROM monitors ORDER BY sort_order ASC, created_at ASC'
+      'SELECT id, name, url, display_url, type, status, last_check, cert_expiry, domain_expiry, paused, tags, check_ssl FROM monitors ORDER BY sort_order ASC, created_at ASC'
     ).all();
     return c.json(results);
   } catch (e: unknown) {
@@ -272,7 +274,7 @@ app.get('/monitors/public', async (c) => {
 app.get('/monitors/public/details', async (c) => {
   try {
     const { results: monitors } = await c.env.DB.prepare(
-      'SELECT id, name, url, type, status, last_check, cert_expiry, domain_expiry, paused, tags, check_ssl FROM monitors ORDER BY sort_order ASC, created_at ASC'
+      'SELECT id, name, url, display_url, type, status, last_check, cert_expiry, domain_expiry, paused, tags, check_ssl FROM monitors ORDER BY sort_order ASC, created_at ASC'
     ).all();
     if (!monitors || monitors.length === 0) return c.json({ monitors: [] });
 
@@ -303,7 +305,9 @@ app.get('/monitors/public/details', async (c) => {
         SUM(CASE WHEN created_at >= datetime('now','-24 hours') AND is_fail=0 THEN 1 ELSE 0 END) as s24,
         SUM(CASE WHEN created_at >= datetime('now','-7 days') THEN 1 ELSE 0 END) as t7,
         SUM(CASE WHEN created_at >= datetime('now','-7 days') AND is_fail=0 THEN 1 ELSE 0 END) as s7,
-        COUNT(*) as t30, SUM(CASE WHEN is_fail=0 THEN 1 ELSE 0 END) as s30
+        COUNT(*) as t30, SUM(CASE WHEN is_fail=0 THEN 1 ELSE 0 END) as s30,
+        SUM(CASE WHEN created_at >= date('now') THEN 1 ELSE 0 END) as tToday,
+        SUM(CASE WHEN created_at >= date('now') AND is_fail=0 THEN 1 ELSE 0 END) as sToday
       FROM logs WHERE created_at >= datetime('now','-30 days') GROUP BY monitor_id
     `).all();
     const { results: latRows } = await c.env.DB.prepare(
@@ -329,11 +333,14 @@ app.get('/monitors/public/details', async (c) => {
     for (const [, a] of lMap) a.reverse();
 
     const pct = (t?: number, s?: number) => t && t > 0 ? Number(((s! / t) * 100).toFixed(1)) : null;
+    const todayDate = new Date().toISOString().slice(0, 10);
     const enriched = monitors.map(m => {
       const id = m.id as number, s = sMap.get(id), lat = lMap.get(id) || [];
+      const dailyStats = (dMap.get(id) || []).filter(day => day.date !== todayDate);
+      if (Number(s?.tToday) > 0) dailyStats.push({ date: todayDate, up: Number(s?.sToday) || 0, total: Number(s?.tToday) });
       return { ...m, latency: lat.length > 0 ? lat[lat.length - 1] : null,
         uptime_24h: pct(s?.t24, s?.s24), uptime_7d: pct(s?.t7, s?.s7), uptime_30d: pct(s?.t30, s?.s30),
-        daily_stats: dMap.get(id) || [], recent_latencies: lat };
+        daily_stats: dailyStats, recent_latencies: lat };
     });
     return c.json({ monitors: enriched });
   } catch (e: unknown) {
@@ -349,7 +356,7 @@ app.get('/monitors/public/:id', async (c) => {
     if (!Number.isInteger(id) || id <= 0) return c.json({ error: 'Invalid monitor id' }, 400);
 
     const monitor = await c.env.DB.prepare(
-      'SELECT id, name, url, type, status, last_check, cert_expiry, domain_expiry, paused, tags, check_ssl, method, interval, keyword, created_at FROM monitors WHERE id = ?'
+      'SELECT id, name, url, display_url, type, status, last_check, cert_expiry, domain_expiry, paused, tags, check_ssl, method, interval, keyword, created_at FROM monitors WHERE id = ?'
     ).bind(id).first();
     if (!monitor) return c.json({ error: 'Monitor not found' }, 404);
 
@@ -396,6 +403,11 @@ app.get('/monitors/public/:id', async (c) => {
     const pct = (t?: number, s?: number) => t && t > 0 ? Number(((s! / t) * 100).toFixed(1)) : null;
     const t90 = ((d90?.t as number) || 0) + ((today?.t as number) || 0);
     const s90 = ((d90?.s as number) || 0) + ((today?.s as number) || 0);
+    const todayDate = new Date().toISOString().slice(0, 10);
+    const dailyStats = (dailyRows || [])
+      .filter(r => r.date !== todayDate)
+      .map(r => ({ date: r.date as string, up: r.successful_checks as number, total: r.total_checks as number }));
+    if (Number(today?.t) > 0) dailyStats.push({ date: todayDate, up: Number(today?.s) || 0, total: Number(today?.t) });
 
     const range = (c.req.query('range') || '24h');
     const hours = range === '7d' ? 168 : range === '30d' ? 720 : 24;
@@ -413,7 +425,7 @@ app.get('/monitors/public/:id', async (c) => {
 
     const limit = Math.min(Math.max(Number(c.req.query('limit') || 50), 1), 200);
     const { results: logs } = await c.env.DB.prepare(
-      'SELECT id, created_at, status_code, latency, is_fail, reason FROM logs WHERE monitor_id = ? ORDER BY created_at DESC LIMIT ?'
+      'SELECT id, created_at, status_code, latency, is_fail, degraded, reason FROM logs WHERE monitor_id = ? ORDER BY created_at DESC LIMIT ?'
     ).bind(id, limit).all();
 
     const { results: allIncidents } = await c.env.DB.prepare(
@@ -431,7 +443,7 @@ app.get('/monitors/public/:id', async (c) => {
       uptime_7d: pct(upt?.t7 as number, upt?.s7 as number),
       uptime_30d: pct(upt?.t30 as number, upt?.s30 as number),
       uptime_90d: pct(t90, s90),
-      daily_stats: (dailyRows || []).map(r => ({ date: r.date as string, up: r.successful_checks as number, total: r.total_checks as number })),
+      daily_stats: dailyStats,
     };
 
     return c.json({ monitor: enriched, logs: logs || [], latency_series: latencySeries, incidents });
@@ -449,14 +461,20 @@ app.post('/monitors', async (c) => {
     const method = (body.method || 'GET').toUpperCase();
     const config = body.config || null;
     const alertAfterFailures = Number(body.alert_after_failures) > 0 ? Number(body.alert_after_failures) : 1;
+    const displayUrl = String(body.display_url || '').trim() || null;
+    const degradedKeyword = String(body.degraded_keyword || '').trim() || null;
+    const degradedLatency = Number(body.degraded_latency_ms) > 0 ? Math.round(Number(body.degraded_latency_ms)) : 0;
+    const degradedCodes = String(body.degraded_status_codes || '').trim() || null;
+    const alertSilenceDegraded = Number(body.alert_silence_degraded) > 0 ? Number(body.alert_silence_degraded) : 24;
 
     const result = await c.env.DB.prepare(
-      `INSERT INTO monitors (name, url, type, config, method, interval, keyword, user_agent, tags, request_headers, request_body, alert_after_failures)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO monitors (name, url, display_url, type, config, method, interval, keyword, user_agent, tags, request_headers, request_body, alert_after_failures, degraded_keyword, degraded_latency_ms, degraded_status_codes, alert_silence_degraded)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
-      name, url, type, config, method,
+      name, url, displayUrl, type, config, method,
       interval || 300, keyword || null, user_agent || null, tags || null,
-      request_headers || null, request_body || null, alertAfterFailures
+      request_headers || null, request_body || null, alertAfterFailures,
+      degradedKeyword, degradedLatency, degradedCodes, alertSilenceDegraded
     ).run();
 
     const newId = result.meta.last_row_id as number;
@@ -502,10 +520,20 @@ app.patch('/monitors/:id/config', async (c) => {
       ['alert_silence_uptime', 'alert_silence_uptime'], ['alert_silence_ssl', 'alert_silence_ssl'],
       ['alert_silence_domain', 'alert_silence_domain'], ['alert_error_rate', 'alert_error_rate'],
       ['alert_after_failures', 'alert_after_failures'], ['paused', 'paused'],
+      ['degraded_latency_ms', 'degraded_latency_ms'], ['alert_silence_degraded', 'alert_silence_degraded'],
     ];
     for (const [dbField, key] of simpleMap) {
       const v = body[key];
       if (v !== undefined && v !== null) { fields.push(`${dbField} = ?`); values.push(v); }
+    }
+    // 允许清空的可空文本字段:空串写入 NULL
+    const nullableText: [string, keyof Monitor][] = [
+      ['display_url', 'display_url'], ['degraded_keyword', 'degraded_keyword'],
+      ['degraded_status_codes', 'degraded_status_codes'],
+    ];
+    for (const [dbField, key] of nullableText) {
+      const v = body[key];
+      if (v !== undefined) { fields.push(`${dbField} = ?`); values.push(String(v || '').trim() || null); }
     }
     if (body.type !== undefined && ['http', 'dns', 'port'].includes(body.type)) {
       fields.push('type = ?'); values.push(body.type);
@@ -528,7 +556,7 @@ app.post('/monitors/:id/check', async (c) => {
     const monitor = await c.env.DB.prepare(`SELECT ${MONITOR_COLUMNS} FROM monitors WHERE id = ?`)
       .bind(id).first<Monitor>();
     if (!monitor) return c.json({ error: 'Monitor not found' }, 404);
-    const result = await performCheck(monitor, c.env);
+    const result = await performMonitorCheck(monitor, c.env);
     return c.json(result);
   } catch (e: unknown) {
     return c.json({ error: e instanceof Error ? e.message : 'Unknown error' }, 500);
@@ -552,7 +580,7 @@ app.get('/monitors/:id/logs', async (c) => {
   try {
     const limit = Math.min(Math.max(Number(c.req.query('limit')) || 50, 1), 500);
     const { results } = await c.env.DB.prepare(
-      'SELECT id, monitor_id, status_code, latency, is_fail, reason, created_at FROM logs WHERE monitor_id = ? ORDER BY created_at DESC LIMIT ?'
+      'SELECT id, monitor_id, status_code, latency, is_fail, degraded, reason, created_at FROM logs WHERE monitor_id = ? ORDER BY created_at DESC LIMIT ?'
     ).bind(id, limit).all();
     return c.json(results);
   } catch (e: unknown) {
@@ -924,7 +952,7 @@ v1App.get('/logs', async (c) => {
     const whereSql = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
 
     const { results } = await c.env.DB.prepare(
-      `SELECT id, monitor_id, status_code, latency, is_fail, reason, created_at FROM logs ${whereSql} ORDER BY created_at DESC LIMIT ? OFFSET ?`
+      `SELECT id, monitor_id, status_code, latency, is_fail, degraded, reason, created_at FROM logs ${whereSql} ORDER BY created_at DESC LIMIT ? OFFSET ?`
     ).bind(...bind, limit, offset).all();
     const cnt = await c.env.DB.prepare(`SELECT COUNT(*) as c FROM logs ${whereSql}`).bind(...bind).first<{ c: number }>();
     return c.json({ total: cnt?.c || 0, limit, offset, logs: results || [] });
@@ -976,7 +1004,7 @@ v1App.get('/export', async (c) => {
   try {
     const limit = Math.min(Math.max(Number(c.req.query('limit') || 1000), 1), 5000);
     const { results: monitors } = await c.env.DB.prepare(`SELECT ${MONITOR_COLUMNS} FROM monitors ORDER BY sort_order ASC`).all();
-    const { results: logs } = await c.env.DB.prepare('SELECT id, monitor_id, status_code, latency, is_fail, reason, created_at FROM logs ORDER BY created_at DESC LIMIT ?').bind(limit).all();
+    const { results: logs } = await c.env.DB.prepare('SELECT id, monitor_id, status_code, latency, is_fail, degraded, reason, created_at FROM logs ORDER BY created_at DESC LIMIT ?').bind(limit).all();
     const { results: incidents } = await c.env.DB.prepare('SELECT * FROM incidents ORDER BY created_at DESC LIMIT 1000').all();
     const { results: uptime } = await c.env.DB.prepare("SELECT monitor_id, date, total_checks, successful_checks, avg_latency FROM daily_uptime WHERE date >= date('now','-90 days') ORDER BY monitor_id, date").all();
     const { results: settings } = await c.env.DB.prepare('SELECT key, value FROM settings').all<{ key: string; value: string }>();
@@ -1053,7 +1081,7 @@ app.post('/backup/restore', async (c) => {
 const statusHandler = async (c) => {
   try {
     const { results: monitors } = await c.env.DB.prepare(
-      'SELECT id, name, url, type, status, last_check, paused, tags FROM monitors ORDER BY sort_order ASC'
+      'SELECT id, name, url, display_url, type, status, last_check, paused, tags FROM monitors ORDER BY sort_order ASC'
     ).all();
     const ids = (monitors || []).map(m => m.id as number);
     const statsMap: Record<number, { uptime_7d: number | null; uptime_30d: number | null; latency: number | null }> = {};
@@ -1088,7 +1116,7 @@ const statusHandler = async (c) => {
       "SELECT id, title, severity, status, type, created_at, resolved_at FROM incidents WHERE status = 'active' ORDER BY created_at DESC"
     ).all();
     const out = (monitors || []).map(m => ({
-      id: m.id, name: m.name, url: m.url, type: m.type, status: m.status,
+      id: m.id, name: m.name, url: m.url, display_url: m.display_url || null, type: m.type, status: m.status,
       paused: m.paused, tags: m.tags, last_check: m.last_check,
       ...(statsMap[m.id as number] || { uptime_7d: null, uptime_30d: null, latency: null }),
     }));
@@ -1251,10 +1279,11 @@ function isTimeToCheck(monitor: Monitor, now: number): boolean {
 
 async function performMonitorCheck(monitor: Monitor, env: Bindings) {
   const result: CheckResult = await performCheck(monitor, env);
+  const isDegraded = result.ok && result.degraded === true;
 
-  // 写日志
-  await env.DB.prepare('INSERT INTO logs (monitor_id, status_code, latency, is_fail, reason) VALUES (?, ?, ?, ?, ?)')
-    .bind(monitor.id, result.statusCode, result.latency, result.ok ? 0 : 1, result.reason || null).run();
+  // 写日志(降级仍算可用:is_fail=0,单独用 degraded 列标记)
+  await env.DB.prepare('INSERT INTO logs (monitor_id, status_code, latency, is_fail, degraded, reason) VALUES (?, ?, ?, ?, ?, ?)')
+    .bind(monitor.id, result.statusCode, result.latency, result.ok ? 0 : 1, isDegraded ? 1 : 0, result.reason || null).run();
 
   // 刷新 HTTP 监控的证书/域名信息(24h)
   if (monitor.type === 'http') {
@@ -1273,7 +1302,7 @@ async function performMonitorCheck(monitor: Monitor, env: Bindings) {
 
   if (!result.ok) {
     const newRetry = (monitor.retry_count || 0) + 1;
-    if (newRetry >= afterFailures && monitor.status === 'UP') {
+    if (newRetry >= afterFailures && (monitor.status === 'UP' || monitor.status === 'DEGRADED')) {
       await env.DB.prepare('UPDATE monitors SET status = ?, retry_count = ?, last_check = ? WHERE id = ?')
         .bind('DOWN', 0, new Date().toISOString(), monitor.id).run();
       await sendUptimeAlert(env, monitor, 'DOWN', result.reason, lang, tz);
@@ -1281,8 +1310,18 @@ async function performMonitorCheck(monitor: Monitor, env: Bindings) {
       await env.DB.prepare('UPDATE monitors SET status = ?, retry_count = ?, last_check = ? WHERE id = ?')
         .bind('RETRYING', newRetry, new Date().toISOString(), monitor.id).run();
     }
+  } else if (isDegraded) {
+    // 可达但降级:从任意状态进入 DEGRADED,仅在状态切换时告警一次
+    if (monitor.status !== 'DEGRADED') {
+      await env.DB.prepare('UPDATE monitors SET status = ?, retry_count = ?, last_check = ? WHERE id = ?')
+        .bind('DEGRADED', 0, new Date().toISOString(), monitor.id).run();
+      await sendUptimeAlert(env, monitor, 'DEGRADED', result.reason || 'Service degraded', lang, tz);
+    } else {
+      await env.DB.prepare('UPDATE monitors SET last_check = ? WHERE id = ?')
+        .bind(new Date().toISOString(), monitor.id).run();
+    }
   } else {
-    if (monitor.status === 'DOWN' || monitor.status === 'RETRYING') {
+    if (monitor.status === 'DOWN' || monitor.status === 'RETRYING' || monitor.status === 'DEGRADED') {
       await env.DB.prepare('UPDATE monitors SET status = ?, retry_count = ?, last_check = ? WHERE id = ?')
         .bind('UP', 0, new Date().toISOString(), monitor.id).run();
       await sendUptimeAlert(env, monitor, 'UP', result.reason || `Response time: ${result.latency}ms`, lang, tz);
@@ -1296,15 +1335,21 @@ async function performMonitorCheck(monitor: Monitor, env: Bindings) {
   if (monitor.alert_error_rate > 0) {
     await checkErrorRate(env, monitor, lang, tz);
   }
+
+  return result;
 }
 
-async function sendUptimeAlert(env: Bindings, monitor: Monitor, type: 'DOWN' | 'UP', detail: string, lang: Lang, tz: string) {
-  const silenceH = monitor.alert_silence_uptime || 24;
-  const lastAlert = monitor.last_alert_uptime ? new Date(monitor.last_alert_uptime).getTime() : 0;
-  if (type === 'DOWN' && Date.now() - lastAlert < silenceH * 3_600_000) return;
+async function sendUptimeAlert(env: Bindings, monitor: Monitor, type: 'DOWN' | 'UP' | 'DEGRADED', detail: string, lang: Lang, tz: string) {
+  const isDegraded = type === 'DEGRADED';
+  const silenceH = (isDegraded ? monitor.alert_silence_degraded : monitor.alert_silence_uptime) || 24;
+  const lastAlertRaw = isDegraded ? monitor.last_alert_degraded : monitor.last_alert_uptime;
+  const lastAlert = lastAlertRaw ? new Date(lastAlertRaw).getTime() : 0;
+  // DOWN / DEGRADED 受静默窗口约束;恢复(UP)始终发送
+  if ((type === 'DOWN' || isDegraded) && Date.now() - lastAlert < silenceH * 3_600_000) return;
   const msg = buildAlertMessage({ name: monitor.name, url: monitor.url }, type, detail, formatTimeInTz(new Date(), tz), lang);
   await sendAlertToAllChannels(env, msg);
-  await env.DB.prepare('UPDATE monitors SET last_alert_uptime = ? WHERE id = ?')
+  const col = isDegraded ? 'last_alert_degraded' : 'last_alert_uptime';
+  await env.DB.prepare(`UPDATE monitors SET ${col} = ? WHERE id = ?`)
     .bind(new Date().toISOString(), monitor.id).run();
 }
 

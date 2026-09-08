@@ -1,4 +1,5 @@
 import { createApp } from 'vue';
+import { registerSW } from 'virtual:pwa-register';
 import App from './App.vue';
 import router from './router';
 import { createI18n } from 'vue-i18n';
@@ -76,6 +77,14 @@ import '@fontsource/plus-jakarta-sans/latin-700.css';
 import '@fontsource/plus-jakarta-sans/latin-800.css';
 import '@fontsource/jetbrains-mono/latin-400.css';
 import '@fontsource/jetbrains-mono/latin-500.css';
+import '@fontsource/jetbrains-mono/latin-700.css';
+// Status page — match the "rent / ASSET OPS" console: condensed display + Plex mono
+import '@fontsource/barlow-condensed/latin-500.css';
+import '@fontsource/barlow-condensed/latin-600.css';
+import '@fontsource/barlow-condensed/latin-700.css';
+import '@fontsource/ibm-plex-mono/latin-400.css';
+import '@fontsource/ibm-plex-mono/latin-500.css';
+import '@fontsource/ibm-plex-mono/latin-700.css';
 
 // 全局样式
 import './styles/base.css';
@@ -87,3 +96,5 @@ const app = createApp(App);
 app.use(router);
 app.use(i18n);
 app.mount('#app');
+
+registerSW({ immediate: true });

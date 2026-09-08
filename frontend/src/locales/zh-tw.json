@@ -65,7 +65,8 @@
     "up": "線上",
     "down": "異常",
     "retrying": "重試中",
-    "paused": "暫停"
+    "paused": "暫停",
+    "degraded": "降級"
   },
   "hero": {
     "allUpTitle": "所有系統執行正常",
@@ -80,7 +81,10 @@
     "monitors": "監控項",
     "currentUp": "當前可用",
     "avgLatency": "平均延遲",
-    "retry": "重試"
+    "retry": "重試",
+    "degradedTitle": "部分服務已降級",
+    "degradedSubtitle": "可存取但未完全健康,請查看下方受影響的服務",
+    "degradedBadge": "降級"
   },
   "monitorCard": {
     "latencyTrend": "延遲趨勢",
@@ -245,7 +249,15 @@
     "alertAfterFailures": "連續失敗告警次數",
     "errorRateZero": "0=關閉",
     "create": "建立監控",
-    "creating": "建立中..."
+    "creating": "建立中...",
+    "displayUrl": "展示連結",
+    "displayUrlPlaceholder": "狀態頁展示此連結,而非探測 URL",
+    "degradedTitle": "降級判定",
+    "degradedHint": "回傳 2xx 但未完全健康。命中下方任一規則即標記為降級,而非正常/故障。",
+    "degradedKeyword": "降級關鍵字",
+    "degradedLatency": "降級延遲門檻 (ms)",
+    "degradedStatusCodes": "降級狀態碼",
+    "degradedSilence": "降級告警靜默 (小時)"
   },
   "channels": {
     "title": "通知渠道管理",
@@ -642,6 +654,7 @@
     "latencyTrend": "延遲趨勢",
     "now": "現在",
     "noData": "暫無資料",
+    "noSuccessData": "此範圍內尚無成功檢查(延遲僅統計成功請求)",
     "recentChecks": "最近檢查",
     "recentChecksCount": "{count} 筆",
     "colTime": "時間",

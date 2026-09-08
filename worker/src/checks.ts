@@ -4,6 +4,16 @@
 // ============================================================
 import type { Bindings, CheckResult, Monitor } from './types';
 
+// 解析 "429, 503" 形式的降级状态码白名单
+function parseDegradedStatusCodes(raw: string | null | undefined): Set<number> {
+  const out = new Set<number>();
+  for (const part of String(raw || '').split(/[,\s]+/)) {
+    const n = Number(part.trim());
+    if (Number.isInteger(n) && n >= 100 && n <= 599) out.add(n);
+  }
+  return out;
+}
+
 // ---------- HTTP 监测 ----------
 async function checkHTTP(monitor: Monitor): Promise<CheckResult> {
   const startTime = Date.now();
@@ -29,14 +39,35 @@ async function checkHTTP(monitor: Monitor): Promise<CheckResult> {
     }
     const response = await fetch(monitor.url, fetchOptions);
     const latency = Date.now() - startTime;
+    const degradedCodes = parseDegradedStatusCodes(monitor.degraded_status_codes);
+    const degradedKeyword = monitor.degraded_keyword || '';
+    const degradedLatency = Number(monitor.degraded_latency_ms) || 0;
+
     if (!response.ok) {
+      // 非 2xx:命中降级状态码白名单则视为降级(仍可读),否则故障
+      if (degradedCodes.has(response.status)) {
+        return { ok: true, degraded: true, statusCode: response.status, latency, reason: `HTTP ${response.status} (degraded)` };
+      }
       return { ok: false, statusCode: response.status, latency, reason: `HTTP ${response.status}` };
     }
-    if (monitor.keyword) {
-      const text = await response.text();
-      if (!text.includes(monitor.keyword)) {
-        return { ok: false, statusCode: response.status, latency, reason: `Keyword "${monitor.keyword}" not found` };
+
+    // 需要正文时才读一次(主关键字或降级关键字任一配置)
+    const text = (monitor.keyword || degradedKeyword) ? await response.text() : '';
+
+    if (monitor.keyword && !text.includes(monitor.keyword)) {
+      // 主关键字缺失:若降级关键字命中则记降级,否则故障
+      if (degradedKeyword && text.includes(degradedKeyword)) {
+        return { ok: true, degraded: true, statusCode: response.status, latency, reason: `Degraded: keyword "${degradedKeyword}" matched` };
       }
+      return { ok: false, statusCode: response.status, latency, reason: `Keyword "${monitor.keyword}" not found` };
+    }
+
+    // 主关键字通过(或未设):再判降级关键字与慢响应
+    if (degradedKeyword && text.includes(degradedKeyword)) {
+      return { ok: true, degraded: true, statusCode: response.status, latency, reason: `Degraded: keyword "${degradedKeyword}" matched` };
+    }
+    if (degradedLatency > 0 && latency >= degradedLatency) {
+      return { ok: true, degraded: true, statusCode: response.status, latency, reason: `Degraded: slow response ${latency}ms ≥ ${degradedLatency}ms` };
     }
     return { ok: true, statusCode: response.status, latency, reason: '' };
   } catch (e: unknown) {

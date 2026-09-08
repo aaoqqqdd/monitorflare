@@ -65,7 +65,8 @@
     "up": "Operativo",
     "down": "Giù",
     "retrying": "Nuovo tentativo",
-    "paused": "In pausa"
+    "paused": "In pausa",
+    "degraded": "Degradato"
   },
   "hero": {
     "allUpTitle": "Tutti i sistemi operativi",
@@ -80,7 +81,10 @@
     "monitors": "Monitor",
     "currentUp": "Attualmente attivo",
     "avgLatency": "Latenza media",
-    "retry": "Riprova"
+    "retry": "Riprova",
+    "degradedTitle": "Alcuni servizi sono degradati",
+    "degradedSubtitle": "Raggiungibile ma non completamente integro — vedi i servizi interessati qui sotto",
+    "degradedBadge": "Degradato"
   },
   "monitorCard": {
     "latencyTrend": "Andamento latenza",
@@ -245,7 +249,15 @@
     "alertAfterFailures": "Avvisa dopo errori consecutivi",
     "errorRateZero": "0 = disattivato",
     "create": "Crea monitor",
-    "creating": "Creazione..."
+    "creating": "Creazione...",
+    "displayUrl": "Link visualizzato",
+    "displayUrlPlaceholder": "Mostrato nella pagina di stato al posto dell'URL sondato",
+    "degradedTitle": "Rilevamento degradato",
+    "degradedHint": "Risponde 2xx ma non è completamente integro. Qualsiasi regola sotto segna il monitor come DEGRADATO invece di UP/DOWN.",
+    "degradedKeyword": "Parola chiave degradato",
+    "degradedLatency": "Latenza degradato (ms)",
+    "degradedStatusCodes": "Codici di stato degradato",
+    "degradedSilence": "Silenzio avviso degradato (h)"
   },
   "channels": {
     "title": "Canali di notifica",
@@ -642,6 +654,7 @@
     "latencyTrend": "Andamento latenza",
     "now": "ora",
     "noData": "Nessun dato",
+    "noSuccessData": "Nessun controllo riuscito in questo intervallo (la latenza conteggia solo le richieste riuscite)",
     "recentChecks": "Controlli recenti",
     "recentChecksCount": "{count} record",
     "colTime": "Ora",

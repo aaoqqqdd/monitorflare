@@ -7,13 +7,14 @@ CREATE TABLE IF NOT EXISTS monitors (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   url TEXT NOT NULL,
+  display_url TEXT,                      -- 状态页展示用链接(留空则用 url)
   type TEXT DEFAULT 'http',              -- http / dns / port
   config TEXT,                           -- 类型专属 JSON 配置
   method TEXT DEFAULT 'GET',
   request_headers TEXT,                  -- JSON 格式自定义请求头
   request_body TEXT,                     -- POST 请求体
   interval INTEGER DEFAULT 300,
-  status TEXT DEFAULT 'UP',              -- UP / DOWN / RETRYING / PAUSED
+  status TEXT DEFAULT 'UP',              -- UP / DOWN / RETRYING / PAUSED / DEGRADED
   retry_count INTEGER DEFAULT 0,
   last_check DATETIME,
   keyword TEXT,
@@ -33,6 +34,11 @@ CREATE TABLE IF NOT EXISTS monitors (
   last_alert_uptime TEXT,
   last_alert_ssl TEXT,
   last_alert_domain TEXT,
+  degraded_keyword TEXT,                 -- 响应体含此关键字 → 降级
+  degraded_latency_ms INTEGER DEFAULT 0, -- 响应耗时 ≥ 此毫秒数 → 降级(0=关闭)
+  degraded_status_codes TEXT,            -- 逗号分隔 HTTP 状态码,视为降级而非故障
+  alert_silence_degraded INTEGER DEFAULT 24,
+  last_alert_degraded TEXT,
   sort_order INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -43,6 +49,7 @@ CREATE TABLE IF NOT EXISTS logs (
   status_code INTEGER,
   latency INTEGER,
   is_fail INTEGER DEFAULT 0,
+  degraded INTEGER DEFAULT 0,
   reason TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -121,6 +128,7 @@ INSERT OR IGNORE INTO settings (key, value) VALUES ('status_page_feed', '1');
 INSERT OR IGNORE INTO settings (key, value) VALUES ('alert_template_down', 'Error: {reason}');
 INSERT OR IGNORE INTO settings (key, value) VALUES ('alert_template_up', 'Response time: {latency}ms');
 INSERT OR IGNORE INTO settings (key, value) VALUES ('alert_template_error_rate', 'Error rate alert: {error_rate}% in last 5 minutes, threshold {threshold}%');
+INSERT OR IGNORE INTO settings (key, value) VALUES ('alert_template_degraded', 'Degraded: {reason}');
 
 -- ============================================================
 -- 迁移语句(已有 uptime-monitor 数据库升级)
@@ -128,6 +136,13 @@ INSERT OR IGNORE INTO settings (key, value) VALUES ('alert_template_error_rate',
 -- ALTER TABLE monitors ADD COLUMN type TEXT DEFAULT 'http';
 -- ALTER TABLE monitors ADD COLUMN config TEXT;
 -- ALTER TABLE monitors ADD COLUMN alert_after_failures INTEGER DEFAULT 1;
+-- ALTER TABLE monitors ADD COLUMN display_url TEXT;
+-- ALTER TABLE monitors ADD COLUMN degraded_keyword TEXT;
+-- ALTER TABLE monitors ADD COLUMN degraded_latency_ms INTEGER DEFAULT 0;
+-- ALTER TABLE monitors ADD COLUMN degraded_status_codes TEXT;
+-- ALTER TABLE monitors ADD COLUMN alert_silence_degraded INTEGER DEFAULT 24;
+-- ALTER TABLE monitors ADD COLUMN last_alert_degraded TEXT;
+-- ALTER TABLE logs ADD COLUMN degraded INTEGER DEFAULT 0;
 -- CREATE TABLE IF NOT EXISTS subscriptions (...);
 -- CREATE TABLE IF NOT EXISTS api_keys (...);
 -- INSERT OR IGNORE INTO settings (key, value) VALUES ('language', 'en');

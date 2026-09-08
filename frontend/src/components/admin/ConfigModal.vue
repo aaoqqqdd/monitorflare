@@ -36,6 +36,18 @@
               </div>
               <div><label class="block text-xs font-medium text-slate-400 mb-1">{{ $t('configModal.requestHeaders') }}</label><input v-model="configForm.request_headers" placeholder='{"Authorization":"Bearer xxx"}' class="w-full border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800/80 text-white outline-none font-mono placeholder-slate-600 text-xs"></div>
               <div v-if="['POST','PUT','PATCH'].includes(configForm.method)"><label class="block text-xs font-medium text-slate-400 mb-1">{{ $t('configModal.requestBody') }}</label><textarea v-model="configForm.request_body" placeholder='{"key":"value"}' rows="2" class="w-full border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800/80 text-white outline-none font-mono placeholder-slate-600 resize-none text-xs"></textarea></div>
+              <div><label class="block text-xs font-medium text-slate-400 mb-1">{{ $t('monitorForm.displayUrl') }}</label><input v-model="configForm.display_url" :placeholder="$t('monitorForm.displayUrlPlaceholder')" class="w-full border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800/80 text-white outline-none font-mono placeholder-slate-600 text-xs"></div>
+            </div>
+          </div>
+          <!-- 降级判定 -->
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-2"><i class="fas fa-triangle-exclamation text-amber-400 text-[10px]"></i> {{ $t('monitorForm.degradedTitle') }}</h4>
+            <p class="text-xs text-slate-500 mb-3">{{ $t('monitorForm.degradedHint') }}</p>
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="block text-xs font-medium text-slate-400 mb-1">{{ $t('monitorForm.degradedKeyword') }}</label><input v-model="configForm.degraded_keyword" placeholder='"status":"degraded"' class="w-full border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800/80 text-white outline-none font-mono placeholder-slate-600 text-xs"></div>
+              <div><label class="block text-xs font-medium text-slate-400 mb-1">{{ $t('monitorForm.degradedLatency') }}</label><input type="number" min="0" v-model="configForm.degraded_latency_ms" placeholder="0" class="w-full border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800/80 text-white outline-none font-mono placeholder-slate-600 text-xs"></div>
+              <div><label class="block text-xs font-medium text-slate-400 mb-1">{{ $t('monitorForm.degradedStatusCodes') }}</label><input v-model="configForm.degraded_status_codes" placeholder="429,503" class="w-full border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800/80 text-white outline-none font-mono placeholder-slate-600 text-xs"></div>
+              <div><label class="block text-xs font-medium text-slate-400 mb-1">{{ $t('monitorForm.degradedSilence') }}</label><input type="number" min="0" v-model="configForm.alert_silence_degraded" placeholder="24" class="w-full border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800/80 text-white outline-none font-mono placeholder-slate-600 text-xs"></div>
             </div>
           </div>
           <!-- 功能开关 -->

@@ -65,7 +65,8 @@
     "up": "Opérationnel",
     "down": "En panne",
     "retrying": "Nouvel essai",
-    "paused": "En pause"
+    "paused": "En pause",
+    "degraded": "Dégradé"
   },
   "hero": {
     "allUpTitle": "Tous les systèmes opérationnels",
@@ -80,7 +81,10 @@
     "monitors": "Moniteurs",
     "currentUp": "Actuellement disponible",
     "avgLatency": "Latence moyenne",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "degradedTitle": "Certains services sont dégradés",
+    "degradedSubtitle": "Accessible mais pas totalement sain — voir les services concernés ci-dessous",
+    "degradedBadge": "Dégradé"
   },
   "monitorCard": {
     "latencyTrend": "Tendance de latence",
@@ -245,7 +249,15 @@
     "alertAfterFailures": "Alerter après des échecs consécutifs",
     "errorRateZero": "0 = désactivé",
     "create": "Créer le moniteur",
-    "creating": "Création..."
+    "creating": "Création...",
+    "displayUrl": "Lien affiché",
+    "displayUrlPlaceholder": "Affiché sur la page de statut à la place de l'URL sondée",
+    "degradedTitle": "Détection dégradée",
+    "degradedHint": "Renvoie 2xx mais pas totalement sain. Toute règle ci-dessous marque le moniteur DÉGRADÉ au lieu de UP/DOWN.",
+    "degradedKeyword": "Mot-clé dégradé",
+    "degradedLatency": "Latence dégradée (ms)",
+    "degradedStatusCodes": "Codes de statut dégradés",
+    "degradedSilence": "Silence alerte dégradé (h)"
   },
   "channels": {
     "title": "Canaux de notification",
@@ -642,6 +654,7 @@
     "latencyTrend": "Tendance de latence",
     "now": "maintenant",
     "noData": "Aucune donnée",
+    "noSuccessData": "Aucune vérification réussie sur cette période (la latence ne compte que les requêtes réussies)",
     "recentChecks": "Vérifications récentes",
     "recentChecksCount": "{count} enregistrements",
     "colTime": "Heure",

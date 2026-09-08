@@ -65,7 +65,8 @@
     "up": "Betriebsbereit",
     "down": "Nicht erreichbar",
     "retrying": "Erneut versuchen",
-    "paused": "Pausiert"
+    "paused": "Pausiert",
+    "degraded": "Eingeschränkt"
   },
   "hero": {
     "allUpTitle": "Alle Systeme betriebsbereit",
@@ -80,7 +81,10 @@
     "monitors": "Monitore",
     "currentUp": "Derzeit verfügbar",
     "avgLatency": "Durchschnittliche Latenz",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "degradedTitle": "Einige Dienste eingeschränkt",
+    "degradedSubtitle": "Erreichbar, aber nicht voll funktionsfähig – siehe betroffene Dienste unten",
+    "degradedBadge": "Eingeschränkt"
   },
   "monitorCard": {
     "latencyTrend": "Latenzverlauf",
@@ -245,7 +249,15 @@
     "alertAfterFailures": "Bei aufeinanderfolgenden Fehlern benachrichtigen",
     "errorRateZero": "0 = aus",
     "create": "Monitor erstellen",
-    "creating": "Wird erstellt..."
+    "creating": "Wird erstellt...",
+    "displayUrl": "Anzeige-Link",
+    "displayUrlPlaceholder": "Wird auf der Statusseite statt der Prüf-URL angezeigt",
+    "degradedTitle": "Erkennung „eingeschränkt“",
+    "degradedHint": "Liefert 2xx, ist aber nicht voll funktionsfähig. Jede Regel unten markiert den Monitor als EINGESCHRÄNKT statt UP/DOWN.",
+    "degradedKeyword": "Schlüsselwort (eingeschränkt)",
+    "degradedLatency": "Latenz eingeschränkt (ms)",
+    "degradedStatusCodes": "Statuscodes (eingeschränkt)",
+    "degradedSilence": "Alarm-Stummschaltung (Std.)"
   },
   "channels": {
     "title": "Benachrichtigungskanäle",
@@ -642,6 +654,7 @@
     "latencyTrend": "Latenzverlauf",
     "now": "jetzt",
     "noData": "Noch keine Daten",
+    "noSuccessData": "Keine erfolgreichen Prüfungen in diesem Zeitraum (Latenz zählt nur erfolgreiche Anfragen)",
     "recentChecks": "Letzte Prüfungen",
     "recentChecksCount": "{count} Einträge",
     "colTime": "Zeit",

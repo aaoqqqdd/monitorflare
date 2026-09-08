@@ -8,7 +8,7 @@ import type { Bindings } from './types';
 const INIT_STATEMENTS: string[] = [
   `CREATE TABLE IF NOT EXISTS monitors (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL, url TEXT NOT NULL,
+    name TEXT NOT NULL, url TEXT NOT NULL, display_url TEXT,
     type TEXT DEFAULT 'http', config TEXT,
     method TEXT DEFAULT 'GET',
     request_headers TEXT, request_body TEXT,
@@ -25,13 +25,16 @@ const INIT_STATEMENTS: string[] = [
     alert_error_rate INTEGER DEFAULT 0,
     alert_after_failures INTEGER DEFAULT 1,
     last_alert_uptime TEXT, last_alert_ssl TEXT, last_alert_domain TEXT,
+    degraded_keyword TEXT, degraded_latency_ms INTEGER DEFAULT 0,
+    degraded_status_codes TEXT, alert_silence_degraded INTEGER DEFAULT 24,
+    last_alert_degraded TEXT,
     sort_order INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`,
   `CREATE TABLE IF NOT EXISTS logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     monitor_id INTEGER, status_code INTEGER, latency INTEGER,
-    is_fail INTEGER DEFAULT 0, reason TEXT,
+    is_fail INTEGER DEFAULT 0, degraded INTEGER DEFAULT 0, reason TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`,
   `CREATE INDEX IF NOT EXISTS idx_logs_monitor_created ON logs(monitor_id, created_at DESC)`,
@@ -93,6 +96,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   alert_template_down: 'Error: {reason}',
   alert_template_up: 'Response time: {latency}ms',
   alert_template_error_rate: 'Error rate alert: {error_rate}% in last 5 minutes, threshold {threshold}%',
+  alert_template_degraded: 'Degraded: {reason}',
 };
 
 let initPromise: Promise<boolean> | null = null;
@@ -115,6 +119,13 @@ export async function ensureInitialized(env: Bindings): Promise<boolean> {
         await ensureColumn(env, 'monitors', 'type', "TEXT DEFAULT 'http'");
         await ensureColumn(env, 'monitors', 'config', 'TEXT');
         await ensureColumn(env, 'monitors', 'alert_after_failures', 'INTEGER DEFAULT 1');
+        await ensureColumn(env, 'monitors', 'display_url', 'TEXT');
+        await ensureColumn(env, 'monitors', 'degraded_keyword', 'TEXT');
+        await ensureColumn(env, 'monitors', 'degraded_latency_ms', 'INTEGER DEFAULT 0');
+        await ensureColumn(env, 'monitors', 'degraded_status_codes', 'TEXT');
+        await ensureColumn(env, 'monitors', 'alert_silence_degraded', 'INTEGER DEFAULT 24');
+        await ensureColumn(env, 'monitors', 'last_alert_degraded', 'TEXT');
+        await ensureColumn(env, 'logs', 'degraded', 'INTEGER DEFAULT 0');
         return true;
       } catch (e) {
         console.error('Init failed:', e);
