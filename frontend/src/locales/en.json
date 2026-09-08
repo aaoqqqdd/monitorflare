@@ -41,6 +41,8 @@
     "activeMonitors": "{count} active monitors",
     "items": "{count} items",
     "ungrouped": "Ungrouped",
+    "viewList": "List view",
+    "viewGrid": "Grid view",
     "serverError": "Server returned error ({status})",
     "apiError": "API error: {error}",
     "connectionTimeout": "Cannot reach monitoring service after retries. Please refresh the page later.",
@@ -102,6 +104,9 @@
     },
     "sslCheck": "Check SSL certificate",
     "viewDetails": "View details"
+  },
+  "monitorCardCompact": {
+    "daysAgo": "{n} days ago"
   },
   "uptimeBar": {
     "noData": "No data",

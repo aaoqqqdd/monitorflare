@@ -41,6 +41,8 @@
     "activeMonitors": "{count} moniteurs actifs",
     "items": "{count} éléments",
     "ungrouped": "Non groupé",
+    "viewList": "Vue liste",
+    "viewGrid": "Vue grille",
     "serverError": "Le serveur a renvoyé une erreur ({status})",
     "apiError": "Erreur API : {error}",
     "connectionTimeout": "Impossible de joindre le service de surveillance après plusieurs tentatives. Actualisez la page plus tard.",
@@ -102,6 +104,9 @@
     },
     "sslCheck": "Vérifier le certificat SSL",
     "viewDetails": "Voir les détails"
+  },
+  "monitorCardCompact": {
+    "daysAgo": "Il y a {n} jours"
   },
   "uptimeBar": {
     "noData": "Aucune donnée",

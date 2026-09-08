@@ -41,6 +41,8 @@
     "activeMonitors": "{count} aktive Monitore",
     "items": "{count} Einträge",
     "ungrouped": "Nicht gruppiert",
+    "viewList": "Listenansicht",
+    "viewGrid": "Rasteransicht",
     "serverError": "Serverfehler ({status})",
     "apiError": "API-Fehler: {error}",
     "connectionTimeout": "Überwachungsdienst nach erneuten Versuchen nicht erreichbar. Bitte aktualisieren Sie die Seite später.",
@@ -102,6 +104,9 @@
     },
     "sslCheck": "SSL-Zertifikat prüfen",
     "viewDetails": "Details ansehen"
+  },
+  "monitorCardCompact": {
+    "daysAgo": "Vor {n} Tagen"
   },
   "uptimeBar": {
     "noData": "Keine Daten",

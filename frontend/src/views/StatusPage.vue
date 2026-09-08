@@ -63,6 +63,18 @@
             </span>
             <span v-if="lastUpdated" class="text-slate-400 dark:text-slate-500">·</span>
             <span v-if="lastUpdated" class="text-slate-400 dark:text-slate-500">{{ lastUpdated }}</span>
+            <div class="ml-1 flex items-center gap-0.5 rounded-lg border border-slate-200 dark:border-white/10 p-0.5">
+              <button type="button" @click="setViewMode('list')" :title="$t('statusPage.viewList')" :aria-label="$t('statusPage.viewList')"
+                class="w-6 h-6 flex items-center justify-center rounded-md transition-colors cursor-pointer"
+                :class="viewMode === 'list' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300' : 'text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-300'">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+              </button>
+              <button type="button" @click="setViewMode('grid')" :title="$t('statusPage.viewGrid')" :aria-label="$t('statusPage.viewGrid')"
+                class="w-6 h-6 flex items-center justify-center rounded-md transition-colors cursor-pointer"
+                :class="viewMode === 'grid' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300' : 'text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-300'">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25A2.25 2.25 0 0113.5 8.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -75,7 +87,12 @@
               </h3>
               <span class="text-[11px] font-mono text-slate-400 dark:text-slate-600">{{ $t('statusPage.items', { count: section.items.length }) }}</span>
             </div>
-            <MonitorCard v-for="(m, idx) in section.items" :key="m.id" :monitor="m" :index="idx" />
+            <div v-if="viewMode === 'grid'" class="grid gap-3 sm:grid-cols-2">
+              <MonitorCardCompact v-for="(m, idx) in section.items" :key="m.id" :monitor="m" :index="idx" />
+            </div>
+            <template v-else>
+              <MonitorCard v-for="(m, idx) in section.items" :key="m.id" :monitor="m" :index="idx" />
+            </template>
           </section>
         </div>
       </div>
@@ -124,6 +141,7 @@ import { getAppTimezone } from '../main';
 import StatusHeader from '../components/status/StatusHeader.vue';
 import HeroBanner from '../components/status/HeroBanner.vue';
 import MonitorCard from '../components/status/MonitorCard.vue';
+import MonitorCardCompact from '../components/status/MonitorCardCompact.vue';
 import StatusFooter from '../components/status/StatusFooter.vue';
 import StatusLockScreen from '../components/status/StatusLockScreen.vue';
 
@@ -143,6 +161,13 @@ const subOk = ref(false);
 const subscribing = ref(false);
 const locked = ref(false);
 const statusToken = ref(localStorage.getItem(STATUS_TOKEN_KEY) || '');
+
+const VIEW_MODE_KEY = 'mf_status_view';
+const viewMode = ref(localStorage.getItem(VIEW_MODE_KEY) === 'grid' ? 'grid' : 'list');
+const setViewMode = (mode) => {
+    viewMode.value = mode;
+    try { localStorage.setItem(VIEW_MODE_KEY, mode); } catch {}
+};
 
 const activeMonitors = computed(() => monitors.value.filter(m => m.paused !== 1 && m.status !== 'PAUSED'));
 const allUp = computed(() => activeMonitors.value.length > 0 && activeMonitors.value.every(m => m.status === 'UP'));

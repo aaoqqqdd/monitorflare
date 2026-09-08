@@ -41,6 +41,8 @@
     "activeMonitors": "{count} 件の監視が稼働中",
     "items": "{count} 件",
     "ungrouped": "未分類",
+    "viewList": "リスト表示",
+    "viewGrid": "グリッド表示",
     "serverError": "サーバーがエラーを返しました ({status})",
     "apiError": "API エラー: {error}",
     "connectionTimeout": "再試行後も監視サービスに接続できません。後でページを更新してください。",
@@ -102,6 +104,9 @@
     },
     "sslCheck": "SSL証明書を確認",
     "viewDetails": "詳細を見る"
+  },
+  "monitorCardCompact": {
+    "daysAgo": "{n}日前"
   },
   "uptimeBar": {
     "noData": "データなし",

@@ -41,6 +41,8 @@
     "activeMonitors": "{count} 個活躍監控",
     "items": "{count} 項",
     "ungrouped": "未分組",
+    "viewList": "列表檢視",
+    "viewGrid": "網格檢視",
     "serverError": "伺服器返回錯誤 ({status})",
     "apiError": "API 錯誤: {error}",
     "connectionTimeout": "連線監控服務超時,已自動重試仍無法連線,請稍後重新整理頁面。",
@@ -102,6 +104,9 @@
     },
     "sslCheck": "檢查 SSL 憑證",
     "viewDetails": "查看詳情"
+  },
+  "monitorCardCompact": {
+    "daysAgo": "{n} 天前"
   },
   "uptimeBar": {
     "noData": "無資料",

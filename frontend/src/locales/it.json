@@ -41,6 +41,8 @@
     "activeMonitors": "{count} monitor attivi",
     "items": "{count} elementi",
     "ungrouped": "Non raggruppati",
+    "viewList": "Vista elenco",
+    "viewGrid": "Vista griglia",
     "serverError": "Il server ha restituito un errore ({status})",
     "apiError": "Errore API: {error}",
     "connectionTimeout": "Impossibile raggiungere il servizio di monitoraggio dopo i tentativi. Aggiorna la pagina più tardi.",
@@ -102,6 +104,9 @@
     },
     "sslCheck": "Controlla certificato SSL",
     "viewDetails": "Vedi dettagli"
+  },
+  "monitorCardCompact": {
+    "daysAgo": "{n} giorni fa"
   },
   "uptimeBar": {
     "noData": "Nessun dato",

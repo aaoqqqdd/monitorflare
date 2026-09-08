@@ -41,6 +41,8 @@
     "activeMonitors": "{count} monitores activos",
     "items": "{count} elementos",
     "ungrouped": "Sin agrupar",
+    "viewList": "Vista de lista",
+    "viewGrid": "Vista de cuadrícula",
     "serverError": "El servidor devolvió un error ({status})",
     "apiError": "Error de API: {error}",
     "connectionTimeout": "No se puede acceder al servicio de monitoreo después de los reintentos. Actualiza la página más tarde.",
@@ -102,6 +104,9 @@
     },
     "sslCheck": "Comprobar certificado SSL",
     "viewDetails": "Ver detalles"
+  },
+  "monitorCardCompact": {
+    "daysAgo": "Hace {n} días"
   },
   "uptimeBar": {
     "noData": "Sin datos",

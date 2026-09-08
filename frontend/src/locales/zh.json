@@ -41,6 +41,8 @@
     "activeMonitors": "{count} 个活跃监控",
     "items": "{count} 项",
     "ungrouped": "未分组",
+    "viewList": "列表视图",
+    "viewGrid": "网格视图",
     "serverError": "服务器返回错误 ({status})",
     "apiError": "API 错误: {error}",
     "connectionTimeout": "连接监控服务超时,已自动重试仍无法连接,请稍后刷新页面。",
@@ -102,6 +104,9 @@
     },
     "sslCheck": "检查 SSL 证书",
     "viewDetails": "查看详情"
+  },
+  "monitorCardCompact": {
+    "daysAgo": "{n} 天前"
   },
   "uptimeBar": {
     "noData": "无数据",
