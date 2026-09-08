@@ -106,6 +106,16 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages project create monitorflare --production-branch=main
 
+      # 设置 Pages 生产环境变量:_worker.js 需要 WORKER_URL 才能把 /api/* 代理到后端 Worker
+      - name: Configure Pages environment variables
+        run: |
+          curl -sS -X PATCH \
+            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/${{ vars.PAGES_PROJECT }}" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"deployment_configs":{"production":{"env_vars":{"WORKER_URL":{"value":"${{ vars.WORKER_URL }}"},"ALLOWED_ORIGIN":{"value":"${{ vars.ALLOWED_ORIGIN }}"},"BASE_URL":{"value":"${{ vars.BASE_URL }}"}}}}}' \
+            | python3 -c "import sys,json;d=json.load(sys.stdin);print('Pages env updated:', d.get('success'));sys.exit(0 if d.get('success') else 1)"
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
