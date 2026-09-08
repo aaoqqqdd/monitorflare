@@ -262,7 +262,7 @@ app.get('/monitors', async (c) => {
 app.get('/monitors/public', async (c) => {
   try {
     const { results } = await c.env.DB.prepare(
-      'SELECT id, name, url, type, status, last_check, cert_expiry, domain_expiry, paused, tags, check_ssl FROM monitors ORDER BY sort_order ASC, created_at ASC'
+      'SELECT id, name, url, display_url, type, status, last_check, cert_expiry, domain_expiry, paused, tags, check_ssl FROM monitors ORDER BY sort_order ASC, created_at ASC'
     ).all();
     return c.json(results);
   } catch (e: unknown) {
@@ -274,7 +274,7 @@ app.get('/monitors/public', async (c) => {
 app.get('/monitors/public/details', async (c) => {
   try {
     const { results: monitors } = await c.env.DB.prepare(
-      'SELECT id, name, url, type, status, last_check, cert_expiry, domain_expiry, paused, tags, check_ssl FROM monitors ORDER BY sort_order ASC, created_at ASC'
+      'SELECT id, name, url, display_url, type, status, last_check, cert_expiry, domain_expiry, paused, tags, check_ssl FROM monitors ORDER BY sort_order ASC, created_at ASC'
     ).all();
     if (!monitors || monitors.length === 0) return c.json({ monitors: [] });
 
@@ -305,7 +305,9 @@ app.get('/monitors/public/details', async (c) => {
         SUM(CASE WHEN created_at >= datetime('now','-24 hours') AND is_fail=0 THEN 1 ELSE 0 END) as s24,
         SUM(CASE WHEN created_at >= datetime('now','-7 days') THEN 1 ELSE 0 END) as t7,
         SUM(CASE WHEN created_at >= datetime('now','-7 days') AND is_fail=0 THEN 1 ELSE 0 END) as s7,
-        COUNT(*) as t30, SUM(CASE WHEN is_fail=0 THEN 1 ELSE 0 END) as s30
+        COUNT(*) as t30, SUM(CASE WHEN is_fail=0 THEN 1 ELSE 0 END) as s30,
+        SUM(CASE WHEN created_at >= date('now') THEN 1 ELSE 0 END) as tToday,
+        SUM(CASE WHEN created_at >= date('now') AND is_fail=0 THEN 1 ELSE 0 END) as sToday
       FROM logs WHERE created_at >= datetime('now','-30 days') GROUP BY monitor_id
     `).all();
     const { results: latRows } = await c.env.DB.prepare(
@@ -331,11 +333,14 @@ app.get('/monitors/public/details', async (c) => {
     for (const [, a] of lMap) a.reverse();
 
     const pct = (t?: number, s?: number) => t && t > 0 ? Number(((s! / t) * 100).toFixed(1)) : null;
+    const todayDate = new Date().toISOString().slice(0, 10);
     const enriched = monitors.map(m => {
       const id = m.id as number, s = sMap.get(id), lat = lMap.get(id) || [];
+      const dailyStats = (dMap.get(id) || []).filter(day => day.date !== todayDate);
+      if (Number(s?.tToday) > 0) dailyStats.push({ date: todayDate, up: Number(s?.sToday) || 0, total: Number(s?.tToday) });
       return { ...m, latency: lat.length > 0 ? lat[lat.length - 1] : null,
         uptime_24h: pct(s?.t24, s?.s24), uptime_7d: pct(s?.t7, s?.s7), uptime_30d: pct(s?.t30, s?.s30),
-        daily_stats: dMap.get(id) || [], recent_latencies: lat };
+        daily_stats: dailyStats, recent_latencies: lat };
     });
     return c.json({ monitors: enriched });
   } catch (e: unknown) {
@@ -398,6 +403,11 @@ app.get('/monitors/public/:id', async (c) => {
     const pct = (t?: number, s?: number) => t && t > 0 ? Number(((s! / t) * 100).toFixed(1)) : null;
     const t90 = ((d90?.t as number) || 0) + ((today?.t as number) || 0);
     const s90 = ((d90?.s as number) || 0) + ((today?.s as number) || 0);
+    const todayDate = new Date().toISOString().slice(0, 10);
+    const dailyStats = (dailyRows || [])
+      .filter(r => r.date !== todayDate)
+      .map(r => ({ date: r.date as string, up: r.successful_checks as number, total: r.total_checks as number }));
+    if (Number(today?.t) > 0) dailyStats.push({ date: todayDate, up: Number(today?.s) || 0, total: Number(today?.t) });
 
     const range = (c.req.query('range') || '24h');
     const hours = range === '7d' ? 168 : range === '30d' ? 720 : 24;
@@ -433,7 +443,7 @@ app.get('/monitors/public/:id', async (c) => {
       uptime_7d: pct(upt?.t7 as number, upt?.s7 as number),
       uptime_30d: pct(upt?.t30 as number, upt?.s30 as number),
       uptime_90d: pct(t90, s90),
-      daily_stats: (dailyRows || []).map(r => ({ date: r.date as string, up: r.successful_checks as number, total: r.total_checks as number })),
+      daily_stats: dailyStats,
     };
 
     return c.json({ monitor: enriched, logs: logs || [], latency_series: latencySeries, incidents });
@@ -546,7 +556,7 @@ app.post('/monitors/:id/check', async (c) => {
     const monitor = await c.env.DB.prepare(`SELECT ${MONITOR_COLUMNS} FROM monitors WHERE id = ?`)
       .bind(id).first<Monitor>();
     if (!monitor) return c.json({ error: 'Monitor not found' }, 404);
-    const result = await performCheck(monitor, c.env);
+    const result = await performMonitorCheck(monitor, c.env);
     return c.json(result);
   } catch (e: unknown) {
     return c.json({ error: e instanceof Error ? e.message : 'Unknown error' }, 500);
@@ -1325,6 +1335,8 @@ async function performMonitorCheck(monitor: Monitor, env: Bindings) {
   if (monitor.alert_error_rate > 0) {
     await checkErrorRate(env, monitor, lang, tz);
   }
+
+  return result;
 }
 
 async function sendUptimeAlert(env: Bindings, monitor: Monitor, type: 'DOWN' | 'UP' | 'DEGRADED', detail: string, lang: Lang, tz: string) {

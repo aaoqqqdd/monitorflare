@@ -1,28 +1,24 @@
 <template>
-  <div class="min-h-[60vh] flex items-center justify-center py-16">
-    <div class="w-full max-w-md mx-auto">
-      <div class="glass rounded-2xl px-8 py-10 text-center fade-up">
-        <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/[0.04] flex items-center justify-center mx-auto mb-5">
-          <svg class="w-8 h-8 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
-          </svg>
-        </div>
-
-        <h1 class="text-xl font-bold text-slate-900 dark:text-white mb-1">{{ title }}</h1>
-        <p class="text-sm text-slate-500 dark:text-slate-500 mb-6">{{ $t('statusLock.hint') }}</p>
-
-        <form @submit.prevent="submit" class="space-y-3">
-          <input v-model="password" type="password" :placeholder="$t('statusLock.passwordPlaceholder')" autocomplete="current-password"
-            class="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/60 px-4 py-3 text-sm text-slate-800 dark:text-white outline-none focus:border-emerald-500/60 placeholder-slate-400 dark:placeholder-slate-600">
-          <button type="submit" :disabled="loggingIn"
-            class="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-5 py-3 transition-colors disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2">
-            <svg v-if="loggingIn" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            {{ loggingIn ? $t('statusLock.loggingIn') : $t('statusLock.login') }}
-          </button>
-        </form>
-
-        <p v-if="errorText" class="mt-3 text-xs text-red-500 dark:text-red-400">{{ errorText }}</p>
+  <div class="mf-lock">
+    <div class="mf-lock-card fade-up">
+      <div class="mf-lock-icon">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
+        </svg>
       </div>
+
+      <h1 class="mf-lock-title">{{ title }}</h1>
+      <p class="mf-lock-hint">{{ $t('statusLock.hint') }}</p>
+
+      <form @submit.prevent="submit" class="mf-lock-form">
+        <input v-model="password" type="password" :placeholder="$t('statusLock.passwordPlaceholder')" autocomplete="current-password" class="mf-lock-input">
+        <button type="submit" :disabled="loggingIn" class="mf-lock-btn font-mono">
+          <svg v-if="loggingIn" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+          {{ loggingIn ? $t('statusLock.loggingIn') : $t('statusLock.login') }}
+        </button>
+      </form>
+
+      <p v-if="errorText" class="mf-lock-error">{{ errorText }}</p>
     </div>
   </div>
 </template>
@@ -63,3 +59,54 @@ const submit = async () => {
     }
 };
 </script>
+
+<style scoped>
+.mf-lock { min-height: 60vh; display: flex; align-items: center; justify-content: center; padding: 64px 0; }
+.mf-lock-card {
+    width: 100%; max-width: 400px;
+    padding: 36px 32px;
+    text-align: center;
+    border: 1px solid var(--mf-line);
+    border-top: 3px solid var(--mf-accent);
+    border-radius: var(--mf-radius-md);
+    background: var(--mf-surface);
+    box-shadow: var(--mf-shadow-sm);
+}
+.mf-lock-icon {
+    width: 56px; height: 56px; margin: 0 auto 18px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--mf-radius);
+    background: var(--mf-surface-2);
+    color: var(--mf-ink-muted);
+}
+.mf-lock-title {
+    font-family: var(--mf-display);
+    font-weight: 600; font-size: 24px; letter-spacing: 0.03em; text-transform: uppercase;
+    color: var(--mf-ink);
+}
+.mf-lock-hint { font-size: 13px; color: var(--mf-ink-muted); margin: 6px 0 22px; }
+.mf-lock-form { display: flex; flex-direction: column; gap: 10px; }
+.mf-lock-input {
+    width: 100%; height: 42px; padding: 0 14px;
+    border: 1px solid var(--mf-line-strong); border-radius: var(--mf-radius);
+    background: var(--mf-bg); color: var(--mf-ink);
+    font-size: 13px; font-family: var(--mf-mono); outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.mf-lock-input:focus { border-color: var(--mf-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--mf-primary) 18%, transparent); }
+.mf-lock-input::placeholder { color: var(--mf-ink-muted); }
+.mf-lock-btn {
+    width: 100%; height: 42px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    border: 0;
+    border-radius: var(--mf-radius);
+    background: var(--mf-primary);
+    color: #fff;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    cursor: pointer; transition: filter 0.15s;
+    box-shadow: var(--mf-shadow-sm);
+}
+.mf-lock-btn:hover { filter: brightness(1.08); }
+.mf-lock-btn:disabled { opacity: 0.6; cursor: default; }
+.mf-lock-error { margin-top: 12px; font-size: 12px; color: var(--mf-down); }
+</style>
