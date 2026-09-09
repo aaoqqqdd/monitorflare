@@ -34,7 +34,7 @@
           <!-- 监控类型 -->
           <div>
             <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4 flex items-center gap-2"><i class="fas fa-cubes text-green-500"></i> {{ $t('monitorForm.type') }}</h4>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <label v-for="tp in monitorTypes" :key="tp.value"
                 class="flex flex-col items-center justify-center py-3 rounded-xl border-2 cursor-pointer transition-all text-center"
                 :class="newMonitor.type === tp.value ? 'border-green-500 bg-green-900/20 text-green-400' : 'border-slate-700 text-slate-400 hover:border-green-500/40'">
@@ -61,6 +61,17 @@
                 <input v-model="newMonitor.port" type="number" min="1" max="65535" :placeholder="$t('monitorForm.portPlaceholder')" class="input-field w-full border border-slate-700 rounded-xl px-4 py-3 text-sm bg-slate-800/80 text-white outline-none font-mono placeholder-slate-600">
               </div>
             </div>
+            <div v-if="newMonitor.type === 'api'" class="mt-4 space-y-4">
+              <p class="text-xs text-slate-500">{{ $t('monitorForm.apiHint') }}</p>
+              <div class="sm:w-1/2">
+                <label class="block text-sm font-medium text-slate-300 mb-2">{{ $t('monitorForm.apiExpectedStatus') }} <span class="text-xs font-normal text-slate-500">{{ $t('common.optional') }}</span></label>
+                <input v-model="newMonitor.expected_status" placeholder="200" class="input-field w-full border border-slate-700 rounded-xl px-4 py-3 text-sm bg-slate-800/80 text-white outline-none font-mono placeholder-slate-600">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2">{{ $t('monitorForm.apiAssertions') }} <span class="text-xs font-normal text-slate-500">{{ $t('monitorForm.apiAssertionsHint') }}</span></label>
+                <textarea v-model="newMonitor.assertions_raw" rows="4" placeholder="data.status == ok&#10;code == 0&#10;data.list[0].id exists" class="input-field w-full border border-slate-700 rounded-xl px-4 py-3 text-sm bg-slate-800/80 text-white outline-none font-mono placeholder-slate-600 resize-none"></textarea>
+              </div>
+            </div>
           </div>
           <!-- 监测频率 -->
           <div>
@@ -81,7 +92,8 @@
               <div>
                 <label class="block text-sm font-medium text-slate-300 mb-2">{{ $t('monitorForm.method') }}</label>
                 <select v-model="newMonitor.method" class="input-field w-full border border-slate-700 rounded-xl px-4 py-3 text-sm bg-slate-800/80 text-white outline-none">
-                  <option value="GET">GET</option><option value="POST">POST</option><option value="HEAD">HEAD</option><option value="PUT">PUT</option><option value="PING">PING</option>
+                  <option value="GET">GET</option><option value="POST">POST</option><option value="HEAD">HEAD</option><option value="PUT">PUT</option><option value="PATCH">PATCH</option><option value="DELETE">DELETE</option><option value="OPTIONS">OPTIONS</option><option value="PING">PING</option>
+
                 </select>
                 <p v-if="newMonitor.method === 'PING'" class="text-xs text-slate-500 mt-1.5">{{ $t('monitorForm.methodPingHint') }}</p>
               </div>
@@ -106,7 +118,7 @@
               <label class="block text-sm font-medium text-slate-300 mb-2">{{ $t('monitorForm.requestHeaders') }} <span class="text-xs font-normal text-slate-500">{{ $t('monitorForm.headersHint') }}</span></label>
               <input v-model="newMonitor.request_headers" placeholder='{"Authorization":"Bearer xxx"}' class="input-field w-full border border-slate-700 rounded-xl px-4 py-3 text-sm bg-slate-800/80 text-white outline-none font-mono placeholder-slate-600">
             </div>
-            <div v-if="['POST','PUT','PATCH'].includes(newMonitor.method)" class="mt-4">
+            <div v-if="['POST','PUT','PATCH','DELETE'].includes(newMonitor.method)" class="mt-4">
               <label class="block text-sm font-medium text-slate-300 mb-2">{{ $t('monitorForm.requestBody') }}</label>
               <textarea v-model="newMonitor.request_body" placeholder='{"key":"value"}' rows="3" class="input-field w-full border border-slate-700 rounded-xl px-4 py-3 text-sm bg-slate-800/80 text-white outline-none font-mono placeholder-slate-600 resize-none"></textarea>
             </div>
@@ -115,8 +127,8 @@
               <input type="number" v-model="newMonitor.alert_error_rate" min="0" max="100" placeholder="0" class="input-field w-full border border-slate-700 rounded-xl px-4 py-3 text-sm bg-slate-800/80 text-white outline-none placeholder-slate-600">
             </div>
           </div>
-          <!-- 降级判定(仅 HTTP) -->
-          <div v-if="newMonitor.type === 'http'">
+          <!-- 降级判定(HTTP / API) -->
+          <div v-if="['http','api'].includes(newMonitor.type)">
             <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center gap-2"><i class="fas fa-triangle-exclamation text-amber-400"></i> {{ $t('monitorForm.degradedTitle') }}</h4>
             <p class="text-xs text-slate-500 mb-4">{{ $t('monitorForm.degradedHint') }}</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -182,6 +194,7 @@ defineEmits(['close', 'submit']);
 
 const monitorTypes = [
     { value: 'http', labelKey: 'monitorForm.typeHttp', descKey: 'monitorForm.typeHttpDesc' },
+    { value: 'api', labelKey: 'monitorForm.typeApi', descKey: 'monitorForm.typeApiDesc' },
     { value: 'dns', labelKey: 'monitorForm.typeDns', descKey: 'monitorForm.typeDnsDesc' },
     { value: 'port', labelKey: 'monitorForm.typePort', descKey: 'monitorForm.typePortDesc' },
 ];

@@ -98,6 +98,7 @@
     "domainExpired": "Domaine expiré",
     "type": {
       "http": "Vérification HTTP",
+      "api": "Vérification API",
       "dns": "Vérification DNS",
       "port": "Vérification de port",
       "ssl": "Vérification SSL"
@@ -220,6 +221,12 @@
     "typeDnsDesc": "Existence et valeur de l'enregistrement",
     "typePort": "Port TCP",
     "typePortDesc": "Accessibilité du port",
+    "typeApi": "API",
+    "typeApiDesc": "Valider la réponse JSON",
+    "apiHint": "Envoyer une requête à une API tierce et valider sa réponse JSON. Placez l'authentification dans les en-têtes de requête.",
+    "apiExpectedStatus": "Code de statut attendu",
+    "apiAssertions": "Assertions de réponse",
+    "apiAssertionsHint": "une par ligne : chemin == valeur / != / ~= (contient) / > / < / exists",
     "name": "Nom d'affichage",
     "namePlaceholder": "ex. Mon site",
     "url": "URL / Hôte",

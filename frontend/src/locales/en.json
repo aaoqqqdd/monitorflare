@@ -98,6 +98,7 @@
     "domainExpired": "Domain expired",
     "type": {
       "http": "HTTP check",
+      "api": "API check",
       "dns": "DNS check",
       "port": "Port check",
       "ssl": "SSL check"
@@ -220,6 +221,12 @@
     "typeDnsDesc": "Record existence & value",
     "typePort": "TCP Port",
     "typePortDesc": "Port reachability",
+    "typeApi": "API",
+    "typeApiDesc": "JSON response assertions",
+    "apiHint": "Send a request to a third-party API and validate its JSON response. Put auth tokens in Request headers.",
+    "apiExpectedStatus": "Expected status code",
+    "apiAssertions": "Response assertions",
+    "apiAssertionsHint": "one per line: path == value / != / ~= (contains) / > / < / exists",
     "name": "Display name",
     "namePlaceholder": "e.g. My Website",
     "url": "URL / Host",

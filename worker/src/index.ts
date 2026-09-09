@@ -447,7 +447,7 @@ app.post('/monitors', async (c) => {
     const body = await c.req.json<Partial<Monitor>>();
     const { name, url, interval, keyword, user_agent, tags, request_headers, request_body } = body;
     if (!name || !url) return c.json({ error: 'Missing name or url' }, 400);
-    const type = (['dns', 'port'].includes(body.type || '') ? body.type : 'http') as Monitor['type'];
+    const type = (['dns', 'port', 'api'].includes(body.type || '') ? body.type : 'http') as Monitor['type'];
     const method = (body.method || 'GET').toUpperCase();
     const config = body.config || null;
     const alertAfterFailures = Number(body.alert_after_failures) > 0 ? Number(body.alert_after_failures) : 1;
@@ -468,7 +468,7 @@ app.post('/monitors', async (c) => {
     ).run();
 
     const newId = result.meta.last_row_id as number;
-    if (type === 'http' && (body.check_ssl !== 0 || body.check_domain !== 0)) {
+    if ((type === 'http' || type === 'api') && (body.check_ssl !== 0 || body.check_domain !== 0)) {
       c.executionCtx.waitUntil((async () => {
         try {
           await c.env.DB.prepare('UPDATE monitors SET check_info_status = ? WHERE id = ?')
@@ -525,7 +525,7 @@ app.patch('/monitors/:id/config', async (c) => {
       const v = body[key];
       if (v !== undefined) { fields.push(`${dbField} = ?`); values.push(String(v || '').trim() || null); }
     }
-    if (body.type !== undefined && ['http', 'dns', 'port'].includes(body.type)) {
+    if (body.type !== undefined && ['http', 'dns', 'port', 'api'].includes(body.type)) {
       fields.push('type = ?'); values.push(body.type);
     }
     if (body.config !== undefined && body.config !== null) {
@@ -1275,8 +1275,8 @@ async function performMonitorCheck(monitor: Monitor, env: Bindings) {
   await env.DB.prepare('INSERT INTO logs (monitor_id, status_code, latency, is_fail, degraded, reason) VALUES (?, ?, ?, ?, ?, ?)')
     .bind(monitor.id, result.statusCode, result.latency, result.ok ? 0 : 1, isDegraded ? 1 : 0, result.reason || null).run();
 
-  // 刷新 HTTP 监控的证书/域名信息(24h)
-  if (monitor.type === 'http') {
+  // 刷新 HTTP / API 监控的证书/域名信息(24h)
+  if (monitor.type === 'http' || monitor.type === 'api') {
     const lastInfoCheck = monitor.check_info_status ? new Date(monitor.check_info_status).getTime() : 0;
     if (Date.now() - lastInfoCheck > 86400000) {
       env.DB.prepare('UPDATE monitors SET check_info_status = ? WHERE id = ?')
@@ -1387,7 +1387,7 @@ async function checkExpiryAlerts(env: Bindings) {
   const lang = isSupportedLang(await getSetting(env, 'language'));
   const tz = await getSetting(env, 'timezone') || 'UTC';
   const { results } = await env.DB.prepare(`
-    SELECT ${MONITOR_COLUMNS} FROM monitors WHERE paused = 0 AND type = 'http' AND (check_ssl = 1 OR check_domain = 1)
+    SELECT ${MONITOR_COLUMNS} FROM monitors WHERE paused = 0 AND type IN ('http', 'api') AND (check_ssl = 1 OR check_domain = 1)
   `).all<Monitor>();
   for (const monitor of results || []) {
     const now = Date.now();

@@ -266,6 +266,7 @@ const typeKey = computed(() => {
         if (monitor.value?.check_ssl === 1) return 'ssl';
         return 'http';
     }
+    if (type === 'api') return 'api';
     if (type === 'dns') return 'dns';
     if (type === 'port') return 'port';
     return '';
@@ -273,12 +274,14 @@ const typeKey = computed(() => {
 const typeIcon = computed(() => ({
     ssl: 'fa-brands fa-expeditedssl',
     http: 'fa-solid fa-fingerprint',
+    api: 'fa-solid fa-code',
     dns: 'fa-solid fa-globe',
     port: 'fa-solid fa-server',
 }[typeKey.value] || 'fa-solid fa-fingerprint'));
 const typeLabel = computed(() => ({
     ssl: 'SSL',
     http: 'HTTP/HTTPS',
+    api: 'API',
     dns: 'DNS',
     port: 'TCP',
 }[typeKey.value] || 'HTTP/HTTPS'));

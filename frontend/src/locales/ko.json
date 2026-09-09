@@ -98,6 +98,7 @@
     "domainExpired": "도메인 만료",
     "type": {
       "http": "HTTP 확인",
+      "api": "API 확인",
       "dns": "DNS 확인",
       "port": "포트 확인",
       "ssl": "SSL 확인"
@@ -220,6 +221,12 @@
     "typeDnsDesc": "레코드 존재 및 값",
     "typePort": "TCP 포트",
     "typePortDesc": "포트 연결 가능 여부",
+    "typeApi": "API",
+    "typeApiDesc": "JSON 응답 검증",
+    "apiHint": "타사 API에 요청을 보내고 JSON 응답을 검증합니다. 인증 정보는 요청 헤더에 입력하세요.",
+    "apiExpectedStatus": "예상 상태 코드",
+    "apiAssertions": "응답 어서션",
+    "apiAssertionsHint": "한 줄에 하나: 경로 == 값 / != / ~=(포함) / > / < / exists",
     "name": "표시 이름",
     "namePlaceholder": "예: 내 웹사이트",
     "url": "URL / 호스트",

@@ -98,6 +98,7 @@
     "domainExpired": "域名已過期",
     "type": {
       "http": "HTTP 檢查",
+      "api": "API 檢查",
       "dns": "DNS 檢查",
       "port": "端口檢查",
       "ssl": "SSL 檢查"
@@ -220,6 +221,12 @@
     "typeDnsDesc": "記錄存在性與值校驗",
     "typePort": "TCP 埠",
     "typePortDesc": "埠連通性",
+    "typeApi": "API",
+    "typeApiDesc": "校驗 JSON 回應欄位",
+    "apiHint": "向第三方 API 發起請求並校驗其 JSON 回應;驗證資訊填在「請求標頭」中。",
+    "apiExpectedStatus": "期望狀態碼",
+    "apiAssertions": "回應斷言",
+    "apiAssertionsHint": "每行一條:路徑 == 值 / != / ~=(包含) / > / < / exists",
     "name": "顯示名稱",
     "namePlaceholder": "例如:我的網站",
     "url": "URL / 主機",

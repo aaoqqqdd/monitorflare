@@ -98,6 +98,7 @@
     "domainExpired": "Dominio expirado",
     "type": {
       "http": "Comprobación HTTP",
+      "api": "Comprobación de API",
       "dns": "Comprobación DNS",
       "port": "Comprobación de puerto",
       "ssl": "Comprobación SSL"
@@ -220,6 +221,12 @@
     "typeDnsDesc": "Existencia y valor del registro",
     "typePort": "Puerto TCP",
     "typePortDesc": "Accesibilidad del puerto",
+    "typeApi": "API",
+    "typeApiDesc": "Validar respuesta JSON",
+    "apiHint": "Envía una solicitud a una API de terceros y valida su respuesta JSON. Pon la autenticación en las cabeceras de solicitud.",
+    "apiExpectedStatus": "Código de estado esperado",
+    "apiAssertions": "Aserciones de respuesta",
+    "apiAssertionsHint": "una por línea: ruta == valor / != / ~= (contiene) / > / < / exists",
     "name": "Nombre para mostrar",
     "namePlaceholder": "ej. Mi sitio web",
     "url": "URL / Host",

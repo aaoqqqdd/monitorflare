@@ -98,6 +98,7 @@
     "domainExpired": "Dominio scaduto",
     "type": {
       "http": "Controllo HTTP",
+      "api": "Controllo API",
       "dns": "Controllo DNS",
       "port": "Controllo porta",
       "ssl": "Controllo SSL"
@@ -220,6 +221,12 @@
     "typeDnsDesc": "Esistenza e valore del record",
     "typePort": "Porta TCP",
     "typePortDesc": "Raggiungibilità della porta",
+    "typeApi": "API",
+    "typeApiDesc": "Valida risposta JSON",
+    "apiHint": "Invia una richiesta a un'API di terze parti e valida la sua risposta JSON. Inserisci l'autenticazione nelle intestazioni della richiesta.",
+    "apiExpectedStatus": "Codice di stato atteso",
+    "apiAssertions": "Asserzioni sulla risposta",
+    "apiAssertionsHint": "una per riga: percorso == valore / != / ~= (contiene) / > / < / exists",
     "name": "Nome visualizzato",
     "namePlaceholder": "es. Il mio sito",
     "url": "URL / Host",

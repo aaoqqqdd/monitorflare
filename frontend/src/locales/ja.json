@@ -98,6 +98,7 @@
     "domainExpired": "ドメインの期限切れ",
     "type": {
       "http": "HTTP チェック",
+      "api": "API チェック",
       "dns": "DNS チェック",
       "port": "ポートチェック",
       "ssl": "SSL チェック"
@@ -220,6 +221,12 @@
     "typeDnsDesc": "レコードの存在と値",
     "typePort": "TCP ポート",
     "typePortDesc": "ポートの到達可能性",
+    "typeApi": "API",
+    "typeApiDesc": "JSON レスポンスの検証",
+    "apiHint": "サードパーティ API にリクエストを送り、JSON レスポンスを検証します。認証情報はリクエストヘッダーに記載してください。",
+    "apiExpectedStatus": "期待するステータスコード",
+    "apiAssertions": "レスポンスアサーション",
+    "apiAssertionsHint": "1 行に 1 つ：パス == 値 / != / ~=(含む) / > / < / exists",
     "name": "表示名",
     "namePlaceholder": "例: マイサイト",
     "url": "URL / ホスト",

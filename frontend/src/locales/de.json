@@ -98,6 +98,7 @@
     "domainExpired": "Domain abgelaufen",
     "type": {
       "http": "HTTP-Check",
+      "api": "API-Check",
       "dns": "DNS-Check",
       "port": "Port-Check",
       "ssl": "SSL-Prüfung"
@@ -220,6 +221,12 @@
     "typeDnsDesc": "Vorhandensein & Wert des Eintrags",
     "typePort": "TCP-Port",
     "typePortDesc": "Port-Erreichbarkeit",
+    "typeApi": "API",
+    "typeApiDesc": "JSON-Antwort prüfen",
+    "apiHint": "Eine Anfrage an eine Drittanbieter-API senden und deren JSON-Antwort prüfen. Authentifizierung in den Anfrage-Headern angeben.",
+    "apiExpectedStatus": "Erwarteter Statuscode",
+    "apiAssertions": "Antwort-Prüfungen",
+    "apiAssertionsHint": "eine pro Zeile: Pfad == Wert / != / ~= (enthält) / > / < / exists",
     "name": "Anzeigename",
     "namePlaceholder": "z. B. Meine Website",
     "url": "URL / Host",

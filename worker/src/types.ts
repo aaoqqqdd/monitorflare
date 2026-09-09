@@ -2,7 +2,7 @@
 // MonitorFlare — 类型定义
 // ============================================================
 
-export type MonitorType = 'http' | 'dns' | 'port';
+export type MonitorType = 'http' | 'dns' | 'port' | 'api';
 
 export interface Monitor {
   id: number;
