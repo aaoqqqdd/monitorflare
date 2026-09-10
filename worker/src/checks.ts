@@ -4,39 +4,90 @@
 // ============================================================
 import type { Bindings, CheckResult, Monitor } from './types';
 
+// 解析 "429, 503" 形式的降级状态码白名单
+function parseDegradedStatusCodes(raw: string | null | undefined): Set<number> {
+  const out = new Set<number>();
+  for (const part of String(raw || '').split(/[,\s]+/)) {
+    const n = Number(part.trim());
+    if (Number.isInteger(n) && n >= 100 && n <= 599) out.add(n);
+  }
+  return out;
+}
+
+// 构造 HTTP 请求(method / 自定义头 / 请求体),供 http 与 api 监测共用
+function buildHttpRequest(monitor: Monitor): { options: RequestInit; headers: Record<string, string> } {
+  let headers: Record<string, string> = {
+    'User-Agent': monitor.user_agent || 'MonitorFlare/1.0',
+  };
+  if (monitor.request_headers) {
+    try {
+      headers = { ...headers, ...JSON.parse(monitor.request_headers) as Record<string, string> };
+    } catch { /* ignore */ }
+  }
+  const method = (monitor.method || 'GET').toUpperCase();
+  const options: RequestInit = {
+    method,
+    headers,
+    cf: { cacheTtl: 0, cacheEverything: false } as RequestInitCfProperties,
+  };
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && monitor.request_body) {
+    options.body = monitor.request_body;
+    if (!headers['Content-Type']) headers['Content-Type'] = 'application/json';
+  }
+  return { options, headers };
+}
+
 // ---------- HTTP 监测 ----------
 async function checkHTTP(monitor: Monitor): Promise<CheckResult> {
   const startTime = Date.now();
+  // PING:连通性检查 —— 发 HEAD 请求,只要服务器有响应(含 4xx/5xx)即视为在线;
+  //       仍走降级判定(降级状态码 / 慢响应)。
+  const isPing = (monitor.method || 'GET').toUpperCase() === 'PING';
   try {
-    let headers: Record<string, string> = {
-      'User-Agent': monitor.user_agent || 'MonitorFlare/1.0',
-    };
-    if (monitor.request_headers) {
-      try {
-        headers = { ...headers, ...JSON.parse(monitor.request_headers) as Record<string, string> };
-      } catch { /* ignore */ }
-    }
-    const fetchOptions: RequestInit = {
-      method: monitor.method || 'GET',
-      headers,
-      cf: { cacheTtl: 0, cacheEverything: false } as RequestInitCfProperties,
-    };
-    if (['POST', 'PUT', 'PATCH'].includes(monitor.method || 'GET') && monitor.request_body) {
-      fetchOptions.body = monitor.request_body;
-      if (!headers['Content-Type']) {
-        (fetchOptions.headers as Record<string, string>)['Content-Type'] = 'application/json';
-      }
-    }
+    const { options: fetchOptions } = buildHttpRequest(monitor);
+    if (isPing) fetchOptions.method = 'HEAD';  // PING 只探连通性
     const response = await fetch(monitor.url, fetchOptions);
     const latency = Date.now() - startTime;
+    const degradedCodes = parseDegradedStatusCodes(monitor.degraded_status_codes);
+    const degradedKeyword = monitor.degraded_keyword || '';
+    const degradedLatency = Number(monitor.degraded_latency_ms) || 0;
+
+    if (isPing) {
+      // 有响应即在线;命中降级状态码或慢响应则记降级(HEAD 无正文,不判关键字)
+      if (degradedCodes.has(response.status)) {
+        return { ok: true, degraded: true, statusCode: response.status, latency, reason: `HTTP ${response.status} (degraded)` };
+      }
+      if (degradedLatency > 0 && latency >= degradedLatency) {
+        return { ok: true, degraded: true, statusCode: response.status, latency, reason: `Degraded: slow response ${latency}ms ≥ ${degradedLatency}ms` };
+      }
+      return { ok: true, statusCode: response.status, latency, reason: '' };
+    }
+
     if (!response.ok) {
+      // 非 2xx:命中降级状态码白名单则视为降级(仍可读),否则故障
+      if (degradedCodes.has(response.status)) {
+        return { ok: true, degraded: true, statusCode: response.status, latency, reason: `HTTP ${response.status} (degraded)` };
+      }
       return { ok: false, statusCode: response.status, latency, reason: `HTTP ${response.status}` };
     }
-    if (monitor.keyword) {
-      const text = await response.text();
-      if (!text.includes(monitor.keyword)) {
-        return { ok: false, statusCode: response.status, latency, reason: `Keyword "${monitor.keyword}" not found` };
+
+    // 需要正文时才读一次(主关键字或降级关键字任一配置)
+    const text = (monitor.keyword || degradedKeyword) ? await response.text() : '';
+
+    if (monitor.keyword && !text.includes(monitor.keyword)) {
+      // 主关键字缺失:若降级关键字命中则记降级,否则故障
+      if (degradedKeyword && text.includes(degradedKeyword)) {
+        return { ok: true, degraded: true, statusCode: response.status, latency, reason: `Degraded: keyword "${degradedKeyword}" matched` };
       }
+      return { ok: false, statusCode: response.status, latency, reason: `Keyword "${monitor.keyword}" not found` };
+    }
+
+    // 主关键字通过(或未设):再判降级关键字与慢响应
+    if (degradedKeyword && text.includes(degradedKeyword)) {
+      return { ok: true, degraded: true, statusCode: response.status, latency, reason: `Degraded: keyword "${degradedKeyword}" matched` };
+    }
+    if (degradedLatency > 0 && latency >= degradedLatency) {
+      return { ok: true, degraded: true, statusCode: response.status, latency, reason: `Degraded: slow response ${latency}ms ≥ ${degradedLatency}ms` };
     }
     return { ok: true, statusCode: response.status, latency, reason: '' };
   } catch (e: unknown) {
@@ -187,11 +238,121 @@ async function checkPort(monitor: Monitor): Promise<CheckResult> {
   }
 }
 
+// ---------- API 监测(HTTP 请求 + JSON 响应断言)----------
+// 用于监控第三方 / 别人的 API:自定义 method、鉴权头、请求体,
+// 并对返回的 JSON 按 "路径 运算符 值" 逐行断言。
+interface ApiConfig {
+  assertions_raw?: string;  // 每行一条断言,如: data.status == ok
+  expected_status?: string; // 期望 HTTP 状态码;留空 = 任意 2xx
+}
+
+interface ApiAssertion { path: string; op: string; value: string; }
+
+function parseAssertions(raw: string | undefined): ApiAssertion[] {
+  const out: ApiAssertion[] = [];
+  for (const lineRaw of String(raw || '').split(/\r?\n/)) {
+    const line = lineRaw.trim();
+    if (!line || line.startsWith('#')) continue;
+    const existsM = line.match(/^(.+?)\s+exists$/i);
+    if (existsM) { out.push({ path: existsM[1].trim(), op: 'exists', value: '' }); continue; }
+    const m = line.match(/^(.+?)\s*(==|!=|~=|>=|<=|>|<)\s*(.+)$/);
+    if (!m) continue;
+    let v = m[3].trim();
+    if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1);
+    out.push({ path: m[1].trim(), op: m[2], value: v });
+  }
+  return out;
+}
+
+// 支持 a.b.c 与 a.b[0].c 形式的取值
+function getByPath(obj: unknown, path: string): unknown {
+  const parts = path.replace(/\[(\d+)\]/g, '.$1').split('.').filter(Boolean);
+  let cur: unknown = obj;
+  for (const p of parts) {
+    if (cur == null || typeof cur !== 'object') return undefined;
+    cur = (cur as Record<string, unknown>)[p];
+  }
+  return cur;
+}
+
+function evalAssertion(a: ApiAssertion, actual: unknown): boolean {
+  if (a.op === 'exists') return actual !== undefined;
+  if (actual === undefined) return false;
+  const an = Number(actual);
+  const vn = Number(a.value);
+  const numeric = !Number.isNaN(an) && !Number.isNaN(vn) && a.value.trim() !== '';
+  switch (a.op) {
+    case '==': return String(actual) === a.value || (numeric && an === vn);
+    case '!=': return !(String(actual) === a.value || (numeric && an === vn));
+    case '~=': return Array.isArray(actual) ? actual.map(String).includes(a.value) : String(actual).includes(a.value);
+    case '>':  return numeric && an > vn;
+    case '<':  return numeric && an < vn;
+    case '>=': return numeric && an >= vn;
+    case '<=': return numeric && an <= vn;
+    default:   return false;
+  }
+}
+
+async function checkAPI(monitor: Monitor): Promise<CheckResult> {
+  const startTime = Date.now();
+  try {
+    const cfg = (() => { try { return (monitor.config ? JSON.parse(monitor.config) : {}) as ApiConfig; } catch { return {}; } })();
+    const { options } = buildHttpRequest(monitor);
+    const response = await fetch(monitor.url, options);
+    const latency = Date.now() - startTime;
+    const degradedCodes = parseDegradedStatusCodes(monitor.degraded_status_codes);
+    const degradedLatency = Number(monitor.degraded_latency_ms) || 0;
+
+    const expected = String(cfg.expected_status || '').trim();
+    const statusOk = expected ? String(response.status) === expected : response.ok;
+    if (!statusOk) {
+      if (degradedCodes.has(response.status)) {
+        return { ok: true, degraded: true, statusCode: response.status, latency, reason: `HTTP ${response.status} (degraded)` };
+      }
+      return { ok: false, statusCode: response.status, latency, reason: expected ? `HTTP ${response.status}, expected ${expected}` : `HTTP ${response.status}` };
+    }
+
+    const assertions = parseAssertions(cfg.assertions_raw);
+    if (assertions.length > 0) {
+      const text = await response.text();
+      let json: unknown;
+      try { json = JSON.parse(text); }
+      catch { return { ok: false, statusCode: response.status, latency, reason: 'Response is not valid JSON' }; }
+      for (const a of assertions) {
+        const actual = getByPath(json, a.path);
+        if (!evalAssertion(a, actual)) {
+          const shown = actual === undefined ? 'undefined' : JSON.stringify(actual);
+          const rhs = a.op === 'exists' ? 'exists' : `${a.op} ${a.value}`;
+          return { ok: false, statusCode: response.status, latency, reason: `Assertion failed: ${a.path} ${rhs} (got ${shown})` };
+        }
+      }
+    }
+
+    if (degradedLatency > 0 && latency >= degradedLatency) {
+      return { ok: true, degraded: true, statusCode: response.status, latency, reason: `Degraded: slow response ${latency}ms ≥ ${degradedLatency}ms` };
+    }
+    return { ok: true, statusCode: response.status, latency, reason: '', detail: assertions.length ? `${assertions.length} assertion(s) passed` : '' };
+  } catch (e: unknown) {
+    const latency = Date.now() - startTime;
+    const errorMsg = e instanceof Error ? e.message : 'Unknown error';
+    let reason = errorMsg;
+    if (errorMsg.includes('handshake') || errorMsg.includes('certificate') || errorMsg.includes('SSL') || errorMsg.includes('TLS')) {
+      reason = `SSL Error: ${errorMsg}`;
+    } else if (errorMsg.includes('time') || errorMsg.includes('timeout')) {
+      reason = 'Timeout';
+    } else if (errorMsg.includes('fetch failed') || errorMsg.includes('getaddrinfo')) {
+      reason = 'DNS resolution failed';
+    }
+    return { ok: false, statusCode: 0, latency, reason };
+  }
+}
+
 // ---------- 统一分发 ----------
 export async function performCheck(monitor: Monitor, _env: Bindings): Promise<CheckResult> {
   switch (monitor.type) {
     case 'dns':  return await checkDNS(monitor);
     case 'port': return await checkPort(monitor);
+    case 'api':  return await checkAPI(monitor);
     case 'http':
     default:     return await checkHTTP(monitor);
   }

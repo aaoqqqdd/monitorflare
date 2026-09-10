@@ -41,6 +41,8 @@
     "activeMonitors": "{count} monitor attivi",
     "items": "{count} elementi",
     "ungrouped": "Non raggruppati",
+    "viewList": "Vista elenco",
+    "viewGrid": "Vista griglia",
     "serverError": "Il server ha restituito un errore ({status})",
     "apiError": "Errore API: {error}",
     "connectionTimeout": "Impossibile raggiungere il servizio di monitoraggio dopo i tentativi. Aggiorna la pagina più tardi.",
@@ -65,7 +67,8 @@
     "up": "Operativo",
     "down": "Giù",
     "retrying": "Nuovo tentativo",
-    "paused": "In pausa"
+    "paused": "In pausa",
+    "degraded": "Degradato"
   },
   "hero": {
     "allUpTitle": "Tutti i sistemi operativi",
@@ -80,7 +83,10 @@
     "monitors": "Monitor",
     "currentUp": "Attualmente attivo",
     "avgLatency": "Latenza media",
-    "retry": "Riprova"
+    "retry": "Riprova",
+    "degradedTitle": "Alcuni servizi sono degradati",
+    "degradedSubtitle": "Raggiungibile ma non completamente integro — vedi i servizi interessati qui sotto",
+    "degradedBadge": "Degradato"
   },
   "monitorCard": {
     "latencyTrend": "Andamento latenza",
@@ -92,12 +98,16 @@
     "domainExpired": "Dominio scaduto",
     "type": {
       "http": "Controllo HTTP",
+      "api": "Controllo API",
       "dns": "Controllo DNS",
       "port": "Controllo porta",
       "ssl": "Controllo SSL"
     },
     "sslCheck": "Controlla certificato SSL",
     "viewDetails": "Vedi dettagli"
+  },
+  "monitorCardCompact": {
+    "daysAgo": "{n} giorni fa"
   },
   "uptimeBar": {
     "noData": "Nessun dato",
@@ -211,6 +221,12 @@
     "typeDnsDesc": "Esistenza e valore del record",
     "typePort": "Porta TCP",
     "typePortDesc": "Raggiungibilità della porta",
+    "typeApi": "API",
+    "typeApiDesc": "Valida risposta JSON",
+    "apiHint": "Invia una richiesta a un'API di terze parti e valida la sua risposta JSON. Inserisci l'autenticazione nelle intestazioni della richiesta.",
+    "apiExpectedStatus": "Codice di stato atteso",
+    "apiAssertions": "Asserzioni sulla risposta",
+    "apiAssertionsHint": "una per riga: percorso == valore / != / ~= (contiene) / > / < / exists",
     "name": "Nome visualizzato",
     "namePlaceholder": "es. Il mio sito",
     "url": "URL / Host",
@@ -229,6 +245,7 @@
     "keywordPlaceholder": "Lascia vuoto per saltare",
     "keywordRequired": "Parola chiave che la pagina deve contenere",
     "method": "Metodo di richiesta",
+    "methodPingHint": "PING: invia una richiesta HEAD; qualsiasi risposta del server (inclusi 4xx/5xx) è considerata online. Le regole di degrado restano valide.",
     "tags": "Tag",
     "tagsPlaceholder": "prod,web,api",
     "tagsHint": "Facoltativo, separato da virgole",
@@ -245,7 +262,15 @@
     "alertAfterFailures": "Avvisa dopo errori consecutivi",
     "errorRateZero": "0 = disattivato",
     "create": "Crea monitor",
-    "creating": "Creazione..."
+    "creating": "Creazione...",
+    "displayUrl": "Link visualizzato",
+    "displayUrlPlaceholder": "Mostrato nella pagina di stato al posto dell'URL sondato",
+    "degradedTitle": "Rilevamento degradato",
+    "degradedHint": "Risponde 2xx ma non è completamente integro. Qualsiasi regola sotto segna il monitor come DEGRADATO invece di UP/DOWN.",
+    "degradedKeyword": "Parola chiave degradato",
+    "degradedLatency": "Latenza degradato (ms)",
+    "degradedStatusCodes": "Codici di stato degradato",
+    "degradedSilence": "Silenzio avviso degradato (h)"
   },
   "channels": {
     "title": "Canali di notifica",
@@ -642,6 +667,7 @@
     "latencyTrend": "Andamento latenza",
     "now": "ora",
     "noData": "Nessun dato",
+    "noSuccessData": "Nessun controllo riuscito in questo intervallo (la latenza conteggia solo le richieste riuscite)",
     "recentChecks": "Controlli recenti",
     "recentChecksCount": "{count} record",
     "colTime": "Ora",

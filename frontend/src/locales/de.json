@@ -41,6 +41,8 @@
     "activeMonitors": "{count} aktive Monitore",
     "items": "{count} Einträge",
     "ungrouped": "Nicht gruppiert",
+    "viewList": "Listenansicht",
+    "viewGrid": "Rasteransicht",
     "serverError": "Serverfehler ({status})",
     "apiError": "API-Fehler: {error}",
     "connectionTimeout": "Überwachungsdienst nach erneuten Versuchen nicht erreichbar. Bitte aktualisieren Sie die Seite später.",
@@ -65,7 +67,8 @@
     "up": "Betriebsbereit",
     "down": "Nicht erreichbar",
     "retrying": "Erneut versuchen",
-    "paused": "Pausiert"
+    "paused": "Pausiert",
+    "degraded": "Eingeschränkt"
   },
   "hero": {
     "allUpTitle": "Alle Systeme betriebsbereit",
@@ -80,7 +83,10 @@
     "monitors": "Monitore",
     "currentUp": "Derzeit verfügbar",
     "avgLatency": "Durchschnittliche Latenz",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "degradedTitle": "Einige Dienste eingeschränkt",
+    "degradedSubtitle": "Erreichbar, aber nicht voll funktionsfähig – siehe betroffene Dienste unten",
+    "degradedBadge": "Eingeschränkt"
   },
   "monitorCard": {
     "latencyTrend": "Latenzverlauf",
@@ -92,12 +98,16 @@
     "domainExpired": "Domain abgelaufen",
     "type": {
       "http": "HTTP-Check",
+      "api": "API-Check",
       "dns": "DNS-Check",
       "port": "Port-Check",
       "ssl": "SSL-Prüfung"
     },
     "sslCheck": "SSL-Zertifikat prüfen",
     "viewDetails": "Details ansehen"
+  },
+  "monitorCardCompact": {
+    "daysAgo": "Vor {n} Tagen"
   },
   "uptimeBar": {
     "noData": "Keine Daten",
@@ -211,6 +221,12 @@
     "typeDnsDesc": "Vorhandensein & Wert des Eintrags",
     "typePort": "TCP-Port",
     "typePortDesc": "Port-Erreichbarkeit",
+    "typeApi": "API",
+    "typeApiDesc": "JSON-Antwort prüfen",
+    "apiHint": "Eine Anfrage an eine Drittanbieter-API senden und deren JSON-Antwort prüfen. Authentifizierung in den Anfrage-Headern angeben.",
+    "apiExpectedStatus": "Erwarteter Statuscode",
+    "apiAssertions": "Antwort-Prüfungen",
+    "apiAssertionsHint": "eine pro Zeile: Pfad == Wert / != / ~= (enthält) / > / < / exists",
     "name": "Anzeigename",
     "namePlaceholder": "z. B. Meine Website",
     "url": "URL / Host",
@@ -229,6 +245,7 @@
     "keywordPlaceholder": "Leer lassen zum Überspringen",
     "keywordRequired": "Schlüsselwort, das die Seite enthalten muss",
     "method": "Anfragemethode",
+    "methodPingHint": "PING: sendet eine HEAD-Anfrage; jede Serverantwort (auch 4xx/5xx) gilt als online. Degraded-Regeln gelten weiterhin.",
     "tags": "Tags",
     "tagsPlaceholder": "prod,web,api",
     "tagsHint": "Optional, durch Komma getrennt",
@@ -245,7 +262,15 @@
     "alertAfterFailures": "Bei aufeinanderfolgenden Fehlern benachrichtigen",
     "errorRateZero": "0 = aus",
     "create": "Monitor erstellen",
-    "creating": "Wird erstellt..."
+    "creating": "Wird erstellt...",
+    "displayUrl": "Anzeige-Link",
+    "displayUrlPlaceholder": "Wird auf der Statusseite statt der Prüf-URL angezeigt",
+    "degradedTitle": "Erkennung „eingeschränkt“",
+    "degradedHint": "Liefert 2xx, ist aber nicht voll funktionsfähig. Jede Regel unten markiert den Monitor als EINGESCHRÄNKT statt UP/DOWN.",
+    "degradedKeyword": "Schlüsselwort (eingeschränkt)",
+    "degradedLatency": "Latenz eingeschränkt (ms)",
+    "degradedStatusCodes": "Statuscodes (eingeschränkt)",
+    "degradedSilence": "Alarm-Stummschaltung (Std.)"
   },
   "channels": {
     "title": "Benachrichtigungskanäle",
@@ -642,6 +667,7 @@
     "latencyTrend": "Latenzverlauf",
     "now": "jetzt",
     "noData": "Noch keine Daten",
+    "noSuccessData": "Keine erfolgreichen Prüfungen in diesem Zeitraum (Latenz zählt nur erfolgreiche Anfragen)",
     "recentChecks": "Letzte Prüfungen",
     "recentChecksCount": "{count} Einträge",
     "colTime": "Zeit",

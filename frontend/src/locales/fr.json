@@ -41,6 +41,8 @@
     "activeMonitors": "{count} moniteurs actifs",
     "items": "{count} éléments",
     "ungrouped": "Non groupé",
+    "viewList": "Vue liste",
+    "viewGrid": "Vue grille",
     "serverError": "Le serveur a renvoyé une erreur ({status})",
     "apiError": "Erreur API : {error}",
     "connectionTimeout": "Impossible de joindre le service de surveillance après plusieurs tentatives. Actualisez la page plus tard.",
@@ -65,7 +67,8 @@
     "up": "Opérationnel",
     "down": "En panne",
     "retrying": "Nouvel essai",
-    "paused": "En pause"
+    "paused": "En pause",
+    "degraded": "Dégradé"
   },
   "hero": {
     "allUpTitle": "Tous les systèmes opérationnels",
@@ -80,7 +83,10 @@
     "monitors": "Moniteurs",
     "currentUp": "Actuellement disponible",
     "avgLatency": "Latence moyenne",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "degradedTitle": "Certains services sont dégradés",
+    "degradedSubtitle": "Accessible mais pas totalement sain — voir les services concernés ci-dessous",
+    "degradedBadge": "Dégradé"
   },
   "monitorCard": {
     "latencyTrend": "Tendance de latence",
@@ -92,12 +98,16 @@
     "domainExpired": "Domaine expiré",
     "type": {
       "http": "Vérification HTTP",
+      "api": "Vérification API",
       "dns": "Vérification DNS",
       "port": "Vérification de port",
       "ssl": "Vérification SSL"
     },
     "sslCheck": "Vérifier le certificat SSL",
     "viewDetails": "Voir les détails"
+  },
+  "monitorCardCompact": {
+    "daysAgo": "Il y a {n} jours"
   },
   "uptimeBar": {
     "noData": "Aucune donnée",
@@ -211,6 +221,12 @@
     "typeDnsDesc": "Existence et valeur de l'enregistrement",
     "typePort": "Port TCP",
     "typePortDesc": "Accessibilité du port",
+    "typeApi": "API",
+    "typeApiDesc": "Valider la réponse JSON",
+    "apiHint": "Envoyer une requête à une API tierce et valider sa réponse JSON. Placez l'authentification dans les en-têtes de requête.",
+    "apiExpectedStatus": "Code de statut attendu",
+    "apiAssertions": "Assertions de réponse",
+    "apiAssertionsHint": "une par ligne : chemin == valeur / != / ~= (contient) / > / < / exists",
     "name": "Nom d'affichage",
     "namePlaceholder": "ex. Mon site",
     "url": "URL / Hôte",
@@ -229,6 +245,7 @@
     "keywordPlaceholder": "Laisser vide pour ignorer",
     "keywordRequired": "Mot-clé que la page doit contenir",
     "method": "Méthode de requête",
+    "methodPingHint": "PING : envoie une requête HEAD ; toute réponse du serveur (y compris 4xx/5xx) est considérée comme en ligne. Les règles de dégradation restent appliquées.",
     "tags": "Étiquettes",
     "tagsPlaceholder": "prod,web,api",
     "tagsHint": "Facultatif, séparé par des virgules",
@@ -245,7 +262,15 @@
     "alertAfterFailures": "Alerter après des échecs consécutifs",
     "errorRateZero": "0 = désactivé",
     "create": "Créer le moniteur",
-    "creating": "Création..."
+    "creating": "Création...",
+    "displayUrl": "Lien affiché",
+    "displayUrlPlaceholder": "Affiché sur la page de statut à la place de l'URL sondée",
+    "degradedTitle": "Détection dégradée",
+    "degradedHint": "Renvoie 2xx mais pas totalement sain. Toute règle ci-dessous marque le moniteur DÉGRADÉ au lieu de UP/DOWN.",
+    "degradedKeyword": "Mot-clé dégradé",
+    "degradedLatency": "Latence dégradée (ms)",
+    "degradedStatusCodes": "Codes de statut dégradés",
+    "degradedSilence": "Silence alerte dégradé (h)"
   },
   "channels": {
     "title": "Canaux de notification",
@@ -642,6 +667,7 @@
     "latencyTrend": "Tendance de latence",
     "now": "maintenant",
     "noData": "Aucune donnée",
+    "noSuccessData": "Aucune vérification réussie sur cette période (la latence ne compte que les requêtes réussies)",
     "recentChecks": "Vérifications récentes",
     "recentChecksCount": "{count} enregistrements",
     "colTime": "Heure",

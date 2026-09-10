@@ -41,6 +41,8 @@
     "activeMonitors": "{count} 个活跃监控",
     "items": "{count} 项",
     "ungrouped": "未分组",
+    "viewList": "列表视图",
+    "viewGrid": "网格视图",
     "serverError": "服务器返回错误 ({status})",
     "apiError": "API 错误: {error}",
     "connectionTimeout": "连接监控服务超时,已自动重试仍无法连接,请稍后刷新页面。",
@@ -65,7 +67,8 @@
     "up": "在线",
     "down": "异常",
     "retrying": "重试中",
-    "paused": "暂停"
+    "paused": "暂停",
+    "degraded": "降级"
   },
   "hero": {
     "allUpTitle": "所有系统运行正常",
@@ -80,7 +83,10 @@
     "monitors": "监控项",
     "currentUp": "当前可用",
     "avgLatency": "平均延迟",
-    "retry": "重试"
+    "retry": "重试",
+    "degradedTitle": "部分服务已降级",
+    "degradedSubtitle": "可访问但未完全健康,请查看下方受影响的服务",
+    "degradedBadge": "降级"
   },
   "monitorCard": {
     "latencyTrend": "延迟趋势",
@@ -92,12 +98,16 @@
     "domainExpired": "域名已过期",
     "type": {
       "http": "HTTP 检查",
+      "api": "API 检查",
       "dns": "DNS 检查",
       "port": "端口检查",
       "ssl": "SSL 检查"
     },
     "sslCheck": "检查 SSL 证书",
     "viewDetails": "查看详情"
+  },
+  "monitorCardCompact": {
+    "daysAgo": "{n} 天前"
   },
   "uptimeBar": {
     "noData": "无数据",
@@ -211,6 +221,12 @@
     "typeDnsDesc": "记录存在性与值校验",
     "typePort": "TCP 端口",
     "typePortDesc": "端口连通性",
+    "typeApi": "API",
+    "typeApiDesc": "校验 JSON 响应字段",
+    "apiHint": "向第三方 API 发起请求并校验其 JSON 响应；鉴权信息填在「请求头」中。",
+    "apiExpectedStatus": "期望状态码",
+    "apiAssertions": "响应断言",
+    "apiAssertionsHint": "每行一条：路径 == 值 / != / ~=(包含) / > / < / exists",
     "name": "显示名称",
     "namePlaceholder": "例如:我的网站",
     "url": "URL / 主机",
@@ -229,6 +245,7 @@
     "keywordPlaceholder": "留空则不检测",
     "keywordRequired": "页面必须包含的关键词",
     "method": "请求方法",
+    "methodPingHint": "PING:发送 HEAD 请求,服务器有任何响应(含 4xx/5xx)即视为在线;降级判定仍生效。",
     "tags": "标签",
     "tagsPlaceholder": "prod,web,api",
     "tagsHint": "可选，逗号分隔",
@@ -245,7 +262,15 @@
     "alertAfterFailures": "连续失败告警次数",
     "errorRateZero": "0=关闭",
     "create": "创建监控",
-    "creating": "创建中..."
+    "creating": "创建中...",
+    "displayUrl": "展示链接",
+    "displayUrlPlaceholder": "状态页展示此链接,而非探测 URL",
+    "degradedTitle": "降级判定",
+    "degradedHint": "返回 2xx 但未完全健康。命中下方任一规则即标记为降级,而非正常/故障。",
+    "degradedKeyword": "降级关键字",
+    "degradedLatency": "降级延迟阈值 (ms)",
+    "degradedStatusCodes": "降级状态码",
+    "degradedSilence": "降级告警静默 (小时)"
   },
   "channels": {
     "title": "通知渠道管理",
@@ -642,6 +667,7 @@
     "latencyTrend": "延迟趋势",
     "now": "现在",
     "noData": "暂无数据",
+    "noSuccessData": "该范围内暂无成功检查(延迟仅统计成功请求)",
     "recentChecks": "最近检查",
     "recentChecksCount": "{count} 条",
     "colTime": "时间",

@@ -129,7 +129,7 @@ async function sendWebhook(cfg: Cfg, msg: AlertMessage): Promise<boolean> {
   const { url, method, headers: headersStr } = cfg;
   if (!url) return false;
   const payload = {
-    event: msg.isDown ? 'monitor.down' : 'monitor.up',
+    event: `monitor.${msg.kind}`,
     monitor: { name: msg.monitorName, url: msg.monitorUrl },
     status: msg.statusText, detail: msg.detail, timestamp: msg.time,
   };

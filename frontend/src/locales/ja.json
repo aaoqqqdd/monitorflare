@@ -41,6 +41,8 @@
     "activeMonitors": "{count} 件の監視が稼働中",
     "items": "{count} 件",
     "ungrouped": "未分類",
+    "viewList": "リスト表示",
+    "viewGrid": "グリッド表示",
     "serverError": "サーバーがエラーを返しました ({status})",
     "apiError": "API エラー: {error}",
     "connectionTimeout": "再試行後も監視サービスに接続できません。後でページを更新してください。",
@@ -65,7 +67,8 @@
     "up": "正常",
     "down": "停止",
     "retrying": "再試行中",
-    "paused": "一時停止"
+    "paused": "一時停止",
+    "degraded": "機能低下"
   },
   "hero": {
     "allUpTitle": "全システム正常稼働中",
@@ -80,7 +83,10 @@
     "monitors": "監視項目",
     "currentUp": "現在稼働中",
     "avgLatency": "平均レイテンシ",
-    "retry": "再試行"
+    "retry": "再試行",
+    "degradedTitle": "一部のサービスが機能低下",
+    "degradedSubtitle": "到達可能ですが完全に正常ではありません。以下の対象を確認してください",
+    "degradedBadge": "機能低下"
   },
   "monitorCard": {
     "latencyTrend": "レイテンシ推移",
@@ -92,12 +98,16 @@
     "domainExpired": "ドメインの期限切れ",
     "type": {
       "http": "HTTP チェック",
+      "api": "API チェック",
       "dns": "DNS チェック",
       "port": "ポートチェック",
       "ssl": "SSL チェック"
     },
     "sslCheck": "SSL証明書を確認",
     "viewDetails": "詳細を見る"
+  },
+  "monitorCardCompact": {
+    "daysAgo": "{n}日前"
   },
   "uptimeBar": {
     "noData": "データなし",
@@ -211,6 +221,12 @@
     "typeDnsDesc": "レコードの存在と値",
     "typePort": "TCP ポート",
     "typePortDesc": "ポートの到達可能性",
+    "typeApi": "API",
+    "typeApiDesc": "JSON レスポンスの検証",
+    "apiHint": "サードパーティ API にリクエストを送り、JSON レスポンスを検証します。認証情報はリクエストヘッダーに記載してください。",
+    "apiExpectedStatus": "期待するステータスコード",
+    "apiAssertions": "レスポンスアサーション",
+    "apiAssertionsHint": "1 行に 1 つ：パス == 値 / != / ~=(含む) / > / < / exists",
     "name": "表示名",
     "namePlaceholder": "例: マイサイト",
     "url": "URL / ホスト",
@@ -229,6 +245,7 @@
     "keywordPlaceholder": "空の場合はスキップ",
     "keywordRequired": "ページに必ず含まれるキーワード",
     "method": "リクエストメソッド",
+    "methodPingHint": "PING:HEAD リクエストを送信し、サーバーから応答があれば（4xx/5xx含む）オンラインと判定します。デグレード判定は引き続き有効です。",
     "tags": "タグ",
     "tagsPlaceholder": "prod,web,api",
     "tagsHint": "任意、カンマ区切り",
@@ -245,7 +262,15 @@
     "alertAfterFailures": "連続失敗後にアラート",
     "errorRateZero": "0 = オフ",
     "create": "監視を作成",
-    "creating": "作成中..."
+    "creating": "作成中...",
+    "displayUrl": "表示リンク",
+    "displayUrlPlaceholder": "監視 URL の代わりにステータスページに表示",
+    "degradedTitle": "機能低下の判定",
+    "degradedHint": "2xx を返すが完全に正常ではない状態。以下のいずれかに該当すると UP/DOWN ではなく機能低下として扱います。",
+    "degradedKeyword": "機能低下キーワード",
+    "degradedLatency": "機能低下レイテンシ (ms)",
+    "degradedStatusCodes": "機能低下ステータスコード",
+    "degradedSilence": "機能低下アラート抑制 (時間)"
   },
   "channels": {
     "title": "通知チャンネル",
@@ -642,6 +667,7 @@
     "latencyTrend": "応答時間の推移",
     "now": "現在",
     "noData": "データがありません",
+    "noSuccessData": "この期間内に成功したチェックがありません(レイテンシは成功リクエストのみ集計)",
     "recentChecks": "最近のチェック",
     "recentChecksCount": "{count} 件",
     "colTime": "時刻",

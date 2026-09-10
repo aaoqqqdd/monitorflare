@@ -41,6 +41,8 @@
     "activeMonitors": "{count} 個活躍監控",
     "items": "{count} 項",
     "ungrouped": "未分組",
+    "viewList": "列表檢視",
+    "viewGrid": "網格檢視",
     "serverError": "伺服器返回錯誤 ({status})",
     "apiError": "API 錯誤: {error}",
     "connectionTimeout": "連線監控服務超時,已自動重試仍無法連線,請稍後重新整理頁面。",
@@ -65,7 +67,8 @@
     "up": "線上",
     "down": "異常",
     "retrying": "重試中",
-    "paused": "暫停"
+    "paused": "暫停",
+    "degraded": "降級"
   },
   "hero": {
     "allUpTitle": "所有系統執行正常",
@@ -80,7 +83,10 @@
     "monitors": "監控項",
     "currentUp": "當前可用",
     "avgLatency": "平均延遲",
-    "retry": "重試"
+    "retry": "重試",
+    "degradedTitle": "部分服務已降級",
+    "degradedSubtitle": "可存取但未完全健康,請查看下方受影響的服務",
+    "degradedBadge": "降級"
   },
   "monitorCard": {
     "latencyTrend": "延遲趨勢",
@@ -92,12 +98,16 @@
     "domainExpired": "域名已過期",
     "type": {
       "http": "HTTP 檢查",
+      "api": "API 檢查",
       "dns": "DNS 檢查",
       "port": "端口檢查",
       "ssl": "SSL 檢查"
     },
     "sslCheck": "檢查 SSL 憑證",
     "viewDetails": "查看詳情"
+  },
+  "monitorCardCompact": {
+    "daysAgo": "{n} 天前"
   },
   "uptimeBar": {
     "noData": "無資料",
@@ -211,6 +221,12 @@
     "typeDnsDesc": "記錄存在性與值校驗",
     "typePort": "TCP 埠",
     "typePortDesc": "埠連通性",
+    "typeApi": "API",
+    "typeApiDesc": "校驗 JSON 回應欄位",
+    "apiHint": "向第三方 API 發起請求並校驗其 JSON 回應;驗證資訊填在「請求標頭」中。",
+    "apiExpectedStatus": "期望狀態碼",
+    "apiAssertions": "回應斷言",
+    "apiAssertionsHint": "每行一條:路徑 == 值 / != / ~=(包含) / > / < / exists",
     "name": "顯示名稱",
     "namePlaceholder": "例如:我的網站",
     "url": "URL / 主機",
@@ -229,6 +245,7 @@
     "keywordPlaceholder": "留空則不檢測",
     "keywordRequired": "頁面必須包含的關鍵詞",
     "method": "請求方法",
+    "methodPingHint": "PING:傳送 HEAD 請求,伺服器有任何回應(含 4xx/5xx)即視為在線;降級判定仍生效。",
     "tags": "標籤",
     "tagsPlaceholder": "prod,web,api",
     "tagsHint": "可選，逗號分隔",
@@ -245,7 +262,15 @@
     "alertAfterFailures": "連續失敗告警次數",
     "errorRateZero": "0=關閉",
     "create": "建立監控",
-    "creating": "建立中..."
+    "creating": "建立中...",
+    "displayUrl": "展示連結",
+    "displayUrlPlaceholder": "狀態頁展示此連結,而非探測 URL",
+    "degradedTitle": "降級判定",
+    "degradedHint": "回傳 2xx 但未完全健康。命中下方任一規則即標記為降級,而非正常/故障。",
+    "degradedKeyword": "降級關鍵字",
+    "degradedLatency": "降級延遲門檻 (ms)",
+    "degradedStatusCodes": "降級狀態碼",
+    "degradedSilence": "降級告警靜默 (小時)"
   },
   "channels": {
     "title": "通知渠道管理",
@@ -642,6 +667,7 @@
     "latencyTrend": "延遲趨勢",
     "now": "現在",
     "noData": "暫無資料",
+    "noSuccessData": "此範圍內尚無成功檢查(延遲僅統計成功請求)",
     "recentChecks": "最近檢查",
     "recentChecksCount": "{count} 筆",
     "colTime": "時間",

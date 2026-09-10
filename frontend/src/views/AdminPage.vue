@@ -206,7 +206,8 @@ const showSettings = ref(false);
 const showApiKeys = ref(false);
 
 // ── 添加监控 ──
-const newMonitor = ref({ name: '', url: '', type: 'http', record_type: 'A', expected: '', port: 443, method: 'GET', keyword: '', user_agent: '', tags: '', request_headers: '', request_body: '', interval: 300, check_ssl: true, check_domain: true, alert_silence_hours: '24', alert_error_rate: 0 });
+const blankMonitor = () => ({ name: '', url: '', display_url: '', type: 'http', record_type: 'A', expected: '', port: 443, assertions_raw: '', expected_status: '', method: 'GET', keyword: '', user_agent: '', tags: '', request_headers: '', request_body: '', interval: 300, check_ssl: true, check_domain: true, alert_silence_hours: '24', alert_error_rate: 0, degraded_keyword: '', degraded_latency_ms: 0, degraded_status_codes: '', alert_silence_degraded: 24 });
+const newMonitor = ref(blankMonitor());
 const submitting = ref(false);
 
 // ── 配置面板 ──
@@ -248,6 +249,7 @@ const authFetch = async (url, options = {}) => {
 const stats = computed(() => ({
     total: monitors.value.length,
     online: monitors.value.filter(m => m.status === 'UP').length,
+    degraded: monitors.value.filter(m => m.status === 'DEGRADED').length,
     offline: monitors.value.filter(m => m.status === 'DOWN' || m.status === 'RETRYING').length,
     paused: monitors.value.filter(m => m.paused === 1).length,
 }));
@@ -267,7 +269,7 @@ const filteredMonitors = computed(() => {
         list = [...list].sort((a, b) => {
             switch (sortKey.value) {
                 case 'name': return (a.name || '').localeCompare(b.name || '', 'zh-CN');
-                case 'status': { const order = { 'DOWN': 0, 'RETRYING': 1, 'UP': 2, 'PAUSED': 3 }; return (order[a.status] ?? 9) - (order[b.status] ?? 9); }
+                case 'status': { const order = { 'DOWN': 0, 'RETRYING': 1, 'DEGRADED': 2, 'UP': 3, 'PAUSED': 4 }; return (order[a.status] ?? 9) - (order[b.status] ?? 9); }
                 case 'latency': return (a._latency ?? 9999) - (b._latency ?? 9999);
                 case 'ssl': { const dA = a.cert_expiry ? new Date(a.cert_expiry).getTime() : Infinity; const dB = b.cert_expiry ? new Date(b.cert_expiry).getTime() : Infinity; return dA - dB; }
                 default: return 0;
@@ -316,14 +318,15 @@ const addMonitor = async () => {
     if (!newMonitor.value.name || !newMonitor.value.url) { addToast(t('adminPage.fillNameUrl'), 'error'); return; }
     submitting.value = true;
     try {
-        const { type: _type, record_type, expected, port, ...rest } = newMonitor.value;
+        const { type: _type, record_type, expected, port, assertions_raw, expected_status, ...rest } = newMonitor.value;
         const type = _type || 'http';
         let config = '{}';
         if (type === 'dns') config = JSON.stringify({ record_type: record_type || 'A', expected: expected || '' });
         else if (type === 'port') config = JSON.stringify({ port: Number(port) || 443 });
+        else if (type === 'api') config = JSON.stringify({ assertions_raw: assertions_raw || '', expected_status: String(expected_status || '').trim() });
         const body = { ...rest, type, config, check_ssl: newMonitor.value.check_ssl ? 1 : 0, check_domain: newMonitor.value.check_domain ? 1 : 0, interval: Number(newMonitor.value.interval) };
         const res = await authFetch(`${API_BASE}/monitors`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        if (res.ok) { newMonitor.value = { name: '', url: '', type: 'http', record_type: 'A', expected: '', port: 443, method: 'GET', keyword: '', user_agent: '', tags: '', request_headers: '', request_body: '', interval: 300, check_ssl: true, check_domain: true, alert_silence_hours: '24', alert_error_rate: 0 }; showAddModal.value = false; addToast(t('adminPage.monitorAdded'), 'success'); fetchMonitors(); }
+        if (res.ok) { newMonitor.value = blankMonitor(); showAddModal.value = false; addToast(t('adminPage.monitorAdded'), 'success'); fetchMonitors(); }
         else { const d = await res.json(); addToast(d.error || t('common.addFailed'), 'error'); }
     } catch { addToast(t('common.networkError'), 'error'); }
     finally { submitting.value = false; }
@@ -350,21 +353,25 @@ const togglePause = async (m) => {
 // ── 克隆 ──
 const cloneMonitor = (m) => {
     let cfg = {}; try { cfg = JSON.parse(m.config || '{}'); } catch {}
-    newMonitor.value = { name: m.name + ' (Copy)', url: m.url, type: m.type || 'http', record_type: cfg.record_type || 'A', expected: cfg.expected || '', port: cfg.port ?? '', method: m.method || 'GET', keyword: m.keyword || '', user_agent: m.user_agent || '', tags: m.tags || '', request_headers: m.request_headers || '', request_body: m.request_body || '', interval: m.interval || 300, check_ssl: m.check_ssl !== 0, check_domain: m.check_domain !== 0, alert_silence_hours: m.alert_silence_uptime || 24, alert_error_rate: m.alert_error_rate || 0 };
+    newMonitor.value = { ...blankMonitor(), name: m.name + ' (Copy)', url: m.url, display_url: m.display_url || '', type: m.type || 'http', record_type: cfg.record_type || 'A', expected: cfg.expected || '', port: cfg.port ?? '', assertions_raw: cfg.assertions_raw || '', expected_status: cfg.expected_status || '', method: m.method || 'GET', keyword: m.keyword || '', user_agent: m.user_agent || '', tags: m.tags || '', request_headers: m.request_headers || '', request_body: m.request_body || '', interval: m.interval || 300, check_ssl: m.check_ssl !== 0, check_domain: m.check_domain !== 0, alert_silence_hours: m.alert_silence_uptime || 24, alert_error_rate: m.alert_error_rate || 0, degraded_keyword: m.degraded_keyword || '', degraded_latency_ms: m.degraded_latency_ms || 0, degraded_status_codes: m.degraded_status_codes || '', alert_silence_degraded: m.alert_silence_degraded ?? 24 };
     showAddModal.value = true;
 };
 
 // ── 配置 ──
 const openConfig = (m) => {
     configTarget.value = m;
-    configForm.value = { name: m.name || '', url: m.url || '', method: m.method || 'GET', keyword: m.keyword || '', user_agent: m.user_agent || '', tags: m.tags || '', request_headers: m.request_headers || '', request_body: m.request_body || '', interval: m.interval || 300, check_ssl: m.check_ssl !== 0, check_domain: m.check_domain !== 0, alert_silence_uptime: m.alert_silence_uptime ?? 24, alert_silence_ssl: m.alert_silence_ssl ?? 24, alert_silence_domain: m.alert_silence_domain ?? 24, alert_error_rate: m.alert_error_rate ?? 0 };
+    let cfg = {}; try { cfg = JSON.parse(m.config || '{}'); } catch {}
+    configForm.value = { name: m.name || '', url: m.url || '', display_url: m.display_url || '', type: m.type || 'http', assertions_raw: cfg.assertions_raw || '', expected_status: cfg.expected_status || '', method: m.method || 'GET', keyword: m.keyword || '', user_agent: m.user_agent || '', tags: m.tags || '', request_headers: m.request_headers || '', request_body: m.request_body || '', interval: m.interval || 300, check_ssl: m.check_ssl !== 0, check_domain: m.check_domain !== 0, alert_silence_uptime: m.alert_silence_uptime ?? 24, alert_silence_ssl: m.alert_silence_ssl ?? 24, alert_silence_domain: m.alert_silence_domain ?? 24, alert_error_rate: m.alert_error_rate ?? 0, degraded_keyword: m.degraded_keyword || '', degraded_latency_ms: m.degraded_latency_ms || 0, degraded_status_codes: m.degraded_status_codes || '', alert_silence_degraded: m.alert_silence_degraded ?? 24 };
     showConfig.value = true;
 };
 
 const saveConfig = async () => {
     if (!configTarget.value) return; configSaving.value = true;
     try {
-        const body = { name: configForm.value.name, url: configForm.value.url, method: configForm.value.method || 'GET', keyword: configForm.value.keyword, user_agent: configForm.value.user_agent, tags: configForm.value.tags || '', request_headers: configForm.value.request_headers || '', request_body: configForm.value.request_body || '', interval: Number(configForm.value.interval), check_ssl: configForm.value.check_ssl ? 1 : 0, check_domain: configForm.value.check_domain ? 1 : 0, alert_silence_uptime: Number(configForm.value.alert_silence_uptime), alert_silence_ssl: Number(configForm.value.alert_silence_ssl), alert_silence_domain: Number(configForm.value.alert_silence_domain), alert_error_rate: Number(configForm.value.alert_error_rate ?? 0) };
+        const body = { name: configForm.value.name, url: configForm.value.url, display_url: configForm.value.display_url || '', method: configForm.value.method || 'GET', keyword: configForm.value.keyword, user_agent: configForm.value.user_agent, tags: configForm.value.tags || '', request_headers: configForm.value.request_headers || '', request_body: configForm.value.request_body || '', interval: Number(configForm.value.interval), check_ssl: configForm.value.check_ssl ? 1 : 0, check_domain: configForm.value.check_domain ? 1 : 0, alert_silence_uptime: Number(configForm.value.alert_silence_uptime), alert_silence_ssl: Number(configForm.value.alert_silence_ssl), alert_silence_domain: Number(configForm.value.alert_silence_domain), alert_error_rate: Number(configForm.value.alert_error_rate ?? 0), degraded_keyword: configForm.value.degraded_keyword || '', degraded_latency_ms: Number(configForm.value.degraded_latency_ms || 0), degraded_status_codes: configForm.value.degraded_status_codes || '', alert_silence_degraded: Number(configForm.value.alert_silence_degraded ?? 24) };
+        if (configForm.value.type === 'api') {
+            body.config = JSON.stringify({ assertions_raw: configForm.value.assertions_raw || '', expected_status: String(configForm.value.expected_status || '').trim() });
+        }
         const res = await authFetch(`${API_BASE}/monitors/${configTarget.value.id}/config`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         if (res.ok) { addToast(t('adminPage.saved'), 'success'); showConfig.value = false; fetchMonitors(); }
         else { const d = await res.json(); addToast(d.error || t('common.saveFailed'), 'error'); }

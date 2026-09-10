@@ -41,6 +41,8 @@
     "activeMonitors": "{count} active monitors",
     "items": "{count} items",
     "ungrouped": "Ungrouped",
+    "viewList": "List view",
+    "viewGrid": "Grid view",
     "serverError": "Server returned error ({status})",
     "apiError": "API error: {error}",
     "connectionTimeout": "Cannot reach monitoring service after retries. Please refresh the page later.",
@@ -65,7 +67,8 @@
     "up": "Operational",
     "down": "Down",
     "retrying": "Retrying",
-    "paused": "Paused"
+    "paused": "Paused",
+    "degraded": "Degraded"
   },
   "hero": {
     "allUpTitle": "All systems operational",
@@ -80,7 +83,10 @@
     "monitors": "Monitors",
     "currentUp": "Currently up",
     "avgLatency": "Avg latency",
-    "retry": "Retry"
+    "retry": "Retry",
+    "degradedTitle": "Some services are degraded",
+    "degradedSubtitle": "Reachable but not fully healthy — see the affected services below",
+    "degradedBadge": "Degraded"
   },
   "monitorCard": {
     "latencyTrend": "Latency trend",
@@ -92,12 +98,16 @@
     "domainExpired": "Domain expired",
     "type": {
       "http": "HTTP check",
+      "api": "API check",
       "dns": "DNS check",
       "port": "Port check",
       "ssl": "SSL check"
     },
     "sslCheck": "Check SSL certificate",
     "viewDetails": "View details"
+  },
+  "monitorCardCompact": {
+    "daysAgo": "{n} days ago"
   },
   "uptimeBar": {
     "noData": "No data",
@@ -211,6 +221,12 @@
     "typeDnsDesc": "Record existence & value",
     "typePort": "TCP Port",
     "typePortDesc": "Port reachability",
+    "typeApi": "API",
+    "typeApiDesc": "JSON response assertions",
+    "apiHint": "Send a request to a third-party API and validate its JSON response. Put auth tokens in Request headers.",
+    "apiExpectedStatus": "Expected status code",
+    "apiAssertions": "Response assertions",
+    "apiAssertionsHint": "one per line: path == value / != / ~= (contains) / > / < / exists",
     "name": "Display name",
     "namePlaceholder": "e.g. My Website",
     "url": "URL / Host",
@@ -229,6 +245,7 @@
     "keywordPlaceholder": "Leave empty to skip",
     "keywordRequired": "Keyword the page must contain",
     "method": "Request method",
+    "methodPingHint": "PING: sends a HEAD request; any server response (including 4xx/5xx) counts as up. Degraded rules still apply.",
     "tags": "Tags",
     "tagsPlaceholder": "prod,web,api",
     "tagsHint": "Optional, comma-separated",
@@ -245,7 +262,15 @@
     "alertAfterFailures": "Alert after consecutive failures",
     "errorRateZero": "0 = off",
     "create": "Create monitor",
-    "creating": "Creating..."
+    "creating": "Creating...",
+    "displayUrl": "Display link",
+    "displayUrlPlaceholder": "Shown on the status page instead of the probe URL",
+    "degradedTitle": "Degraded detection",
+    "degradedHint": "Returns 2xx but not fully healthy. Any rule below marks the monitor DEGRADED instead of UP/DOWN.",
+    "degradedKeyword": "Degraded keyword",
+    "degradedLatency": "Degraded latency (ms)",
+    "degradedStatusCodes": "Degraded status codes",
+    "degradedSilence": "Degraded alert silence (h)"
   },
   "channels": {
     "title": "Notification channels",
@@ -642,6 +667,7 @@
     "latencyTrend": "Latency trend",
     "now": "now",
     "noData": "No data available yet",
+    "noSuccessData": "No successful checks in this range (latency only counts successful requests)",
     "recentChecks": "Recent checks",
     "recentChecksCount": "{count} records",
     "colTime": "Time",
